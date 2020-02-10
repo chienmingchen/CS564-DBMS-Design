@@ -1,0 +1,259 @@
+<?xml version="1.0"?>
+<pset>
+
+    <!--
+        CS 564, SPRING 2020
+        PROBLEM SET 1 SUBMISSION TEMPLATE
+
+        Please copy and paste your SQL queries into the appropriate spots below. 
+
+        When submitting SQL queries, please do not include the initial 
+        %sql or %%sql IPython commands. Just include the SQL code.
+
+        DO NOT DELETE THE <![CDATA[ ... ]]> LINES IN EACH <answer> TAG!
+        Doing so will break the autograder. To avoid accidentally breaking
+        something, please leave all existing comments in this template
+        intact in your submission.
+    -->
+
+    <student>
+        <name>
+            <!-- Insert your full name on the line below. -->
+            Chien-Ming Chen
+        </name>
+        <netid>
+            <!-- Insert your NetID (NOT your student ID number!) below. -->
+            cchen556
+        </netid>
+        <studentid>
+            <!-- Insert your student ID number below. -->
+            9081715170
+        </studentid>
+    </student>
+
+
+    <!-- BEGIN PROBLEM 1 -->
+    <answer number="1a">
+        <!-- Paste your solution to problem 1, part (a) below this line. --><![CDATA[
+
+        SELECT j AS i, i AS j, val FROM A ORDER BY i ASC;
+
+        ]]><!-- End problem 1, part (a). -->
+    </answer>
+    <answer number="1b">
+        <!-- Paste your solution to problem 1, part (b) below this line. --><![CDATA[
+
+        SELECT SUM(A.val * B.val)
+        FROM A, B
+        Where A.j = 1 AND B.j = 2 AND A.i = B.i
+
+        ]]><!-- End problem 1, part (b). -->
+    </answer>
+    <answer number="1c">
+        <!-- Paste your solution to problem 1, part (c) below this line. --><![CDATA[
+
+        SELECT SUM(A.val * B.val)
+        FROM A, B
+        Where A.i = 1 AND B.j = 2 AND A.j = B.i
+
+        ]]><!-- End problem 1, part (c). -->
+    </answer>
+    <answer number="1d">
+        <!-- Paste your solution to problem 1, part (d) below this line. --><![CDATA[
+
+        SELECT A.i, B.j, SUM(A.val * B.val) AS val
+        FROM A, B
+        WHERE A.j = B.i
+        GROUP BY A.i, B.j
+
+        ]]><!-- End problem 1, part (d). -->
+    </answer>
+    <!-- END PROBLEM 1 -->
+
+
+    <!-- BEGIN PROBLEM 2 -->
+    <answer number="2a">
+        <!-- Paste your solution to problem 2, part (a) below this line. --><![CDATA[
+
+        WITH HolidaySales(Store, AllSales) AS(
+            SELECT Store, SUM(Sales.WeeklySales)
+            FROM Sales, Holidays
+            WHERE Holidays.IsHoliday = "TRUE" AND Holidays.WeekDate = Sales.WeekDate
+            GROUP BY Store
+        )
+        SELECT Store, Allsales
+        FROM HolidaySales
+        WHERE AllSales IN ((SELECT MAX (AllSales) FROM HolidaySales), (SELECT MIN (AllSales) FROM HolidaySales))
+
+        ]]><!-- End problem 2, part (a). -->
+    </answer>
+    <answer number="2b">
+        <!-- Paste your solution to problem 2, part (b) below this line. --><![CDATA[
+
+        WITH NonHolidaySales(WeekDate, TotalSales) AS (
+            SELECT Sales.WeekDate, SUM(Sales.WeeklySales) 
+            FROM Holidays, Sales
+            WHERE Holidays.IsHoliday = "FALSE" AND Holidays.WeekDate = Sales.WeekDate 
+            GROUP BY Sales.WeekDate
+        ),
+        HolidaySales(WeekDate, TotalSales) AS (
+            SELECT Holidays.WeekDate, SUM(Sales.WeeklySales)
+            FROM Holidays, Sales
+            WHERE Holidays.IsHoliday = "TRUE" AND Holidays.WeekDate = Sales.WeekDate
+            GROUP BY Sales.WeekDate
+        ),
+        HolidayAvg(AvgSales) AS (
+            SELECT AVG(HolidaySales.TotalSales)
+            FROM HolidaySales
+        )
+        SELECT COUNT(NonHolidaySales.TotalSales) AS NumNonHolidays
+        FROM NonHolidaySales, HolidayAvg
+        WHERE NonHolidaySales.TotalSales > HolidayAvg.AvgSales
+        
+        ]]><!-- End problem 2, part (b). -->
+    </answer>
+    <answer number="2c">
+        <!-- Paste your solution to problem 2, part (c) below this line. --><![CDATA[
+
+        SELECT Stores.type, SUBSTR(Sales.WeekDate,6,2) AS Month, SUM(Sales.WeeklySales) AS TotalSales
+        FROM Stores, Sales
+        WHERE Sales.Store = Stores.store
+        GROUP BY Stores.type, Month;
+
+        ]]><!-- End problem 2, part (c). -->
+    </answer>
+    <answer number="2d">
+        <!-- Paste your solution to problem 2, part (d) below this line. --><![CDATA[
+
+        CREATE TABLE IF NOT EXISTS COR(
+        AttributeName VARCHAR(20),
+        CorrelationSign Integer
+        );
+        INSERT INTO COR VALUES('Temperature', 1);
+        INSERT INTO COR VALUES('FuelPrice', 1);
+        INSERT INTO COR VALUES('CPI', 1);
+        INSERT INTO COR VALUES('UnemploymentRate', 1);
+
+        WITH Result(AttributeName, CorrelationSign) AS (
+            WITH AvgD(temperature, fuelprice, cpi, unemploymentrate) AS (
+                SELECT AVG(TemporalData.Temperature), AVG(TemporalData.FuelPrice), AVG(CPI), AVG(UnemploymentRate)
+                FROM TemporalData
+            ),
+            AvgS(sales) AS (
+                SELECT AVG(Sales.WeeklySales)
+                FROM Sales, TemporalData
+                WHERE Sales.Store = TemporalData.Store AND Sales.WeekDate = TemporalData.WeekDate
+            )
+            SELECT COR.AttributeName, CAST(
+                                            SUM((D.Temperature - AvgD.temperature)*(S.weeklysales - AvgS.sales))
+                                            /ABS(SUM((D.Temperature - AvgD.temperature)*(S.weeklysales - AvgS.sales))) 
+                                            AS INT
+                                        ) AS Sign
+            FROM COR, TemporalData AS D, AvgD, Sales AS S, AvgS
+            WHERE COR.AttributeName = 'Temperature' AND D.WeekDate = S.WeekDate AND D.Store = S.Store
+            UNION
+            SELECT COR.AttributeName, CAST(
+                                            SUM((D.FuelPrice  - AvgD.FuelPrice)*(S.weeklysales - AvgS.sales))
+                                            /ABS(SUM((D.FuelPrice - AvgD.FuelPrice)*(S.weeklysales - AvgS.sales))) 
+                                            AS INT
+                                        ) AS Sign
+            FROM COR, TemporalData AS D, AvgD, Sales AS S, AvgS
+            WHERE COR.AttributeName = 'FuelPrice' AND D.WeekDate = S.WeekDate AND D.Store = S.Store
+            UNION
+            SELECT COR.AttributeName, CAST(
+                                            SUM((D.CPI  - AvgD.CPI)*(S.weeklysales - AvgS.sales))
+                                            /ABS(SUM((D.CPI - AvgD.CPI)*(S.weeklysales - AvgS.sales))) 
+                                            AS INT
+                                        ) AS Sign
+            FROM COR, TemporalData AS D, AvgD, Sales AS S, AvgS
+            WHERE COR.AttributeName = 'CPI' AND D.WeekDate = S.WeekDate AND D.Store = S.Store
+            UNION
+            SELECT COR.AttributeName, CAST(
+                                            SUM((D.UnemploymentRate  - AvgD.UnemploymentRate)*(S.weeklysales - AvgS.sales))
+                                            /ABS(SUM((D.UnemploymentRate - AvgD.UnemploymentRate)*(S.weeklysales - AvgS.sales))) 
+                                            AS INT
+                                        ) AS Sign
+            FROM COR, TemporalData AS D, AvgD, Sales AS S, AvgS
+            WHERE COR.AttributeName = 'UnemploymentRate' AND D.WeekDate = S.WeekDate AND D.Store = S.Store
+        )
+
+        SELECT Result.AttributeName, CorrelationSign
+        FROM Result
+
+        ]]><!-- End problem 2, part (d). -->
+    </answer>
+    <!-- END PROBLEM 2 -->
+
+
+    <!-- BEGIN PROBLEM 3 -->
+    <answer number="3a">
+        <!-- Paste your solution to problem 3, part (a) below this line. --><![CDATA[
+
+        SELECT OneHop.B AS company, OneHop.d AS distance
+        FROM streets OneHop
+        WHERE OneHop.A = "UW-Madison" AND distance <= 10
+        UNION
+        SELECT TwoHop2.B AS company, (TwoHop1.d + TwoHop2.d) AS distance
+        FROM streets TwoHop1, streets TwoHop2
+        WHERE TwoHop1.A = "UW-Madison" AND TwoHop1.B = TwoHop2.A AND distance <= 10
+        UNION
+        SELECT ThreeHop3.B AS company, (ThreeHop1.d + ThreeHop2.d + ThreeHop3.d) AS distance
+        FROM streets ThreeHop1, streets ThreeHop2, streets ThreeHop3
+        WHERE ThreeHop1.A = "UW-Madison" AND ThreeHop1.B = ThreeHop2.A AND ThreeHop2.B = ThreeHop3.A AND ThreeHop3.B != ThreeHop1.A AND distance <= 10
+
+        ]]><!-- End problem 3, part (a). -->
+    </answer>
+    <answer number="3b">
+        <!-- Paste your solution to problem 3, part (b) below this line. --><![CDATA[
+
+        DROP VIEW IF EXISTS UWMadisonRoute;
+
+        CREATE VIEW UWMadisonRoute AS
+        SELECT routes1.A AS company_1, routes2.B AS company_2, (routes1.d + routes2.d) AS distance
+        FROM streets routes1, streets routes2
+        WHERE routes1.B = "UW-Madison" AND routes2.A = "UW-Madison" AND routes1.A != routes2.B
+        UNION
+        SELECT  routes1.A AS company_1, routes3.B AS company_2, (routes1.d + routes2.d + routes3.d) AS distance
+        FROM streets routes1, streets routes2, streets routes3
+        WHERE (routes1.B = "UW-Madison" OR routes2.B = "UW-Madison") AND routes3.B != "UW-Madison" AND routes1.B = routes2.A AND routes2.B = routes3.A AND routes1.A != routes3.B;
+
+        SELECT * FROM UWMadisonRoute WHERE UWMadisonRoute.distance <= 15;
+
+        ]]><!-- End problem 3, part (b). -->
+    </answer>
+    <answer number="3c">
+        <!-- Paste your solution to problem 3, part (c) below this line. --><![CDATA[
+
+        DELETE FROM streets 
+        WHERE streets.id = (
+            SELECT route1.id
+            From streets route1, streets route2, streets route3
+            WHERE route1.B = route2.A AND route2.B = route3.A AND route3.B = route1.A
+        )
+
+
+        ]]><!-- End problem 3, part (c). -->
+    </answer>
+    <answer number="3d">
+        <!-- Paste your solution to problem 3, part (d) below this line. --><![CDATA[
+
+        WITH RECURSIVE
+        path(origin, A, B, distance) AS (
+            SELECT S1.A, S1.A, S1.A, 0 
+            FROM Streets S1
+            UNION 
+            SELECT P.origin, P.B, S2.B, (P.distance + S2.d) 
+            FROM path AS P, Streets AS S2
+            WHERE P.B = S2.A AND S2.B != P.A
+        )   
+        SELECT origin AS A, B, distance 
+        FROM path
+        ORDER BY distance DESC
+        LIMIT 1;
+
+        ]]><!-- End problem 3, part (d). -->
+    </answer>
+    <!-- END PROBLEM 3 -->
+
+
+</pset>
