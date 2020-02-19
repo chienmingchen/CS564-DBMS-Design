@@ -1,0 +1,8 @@
+.separator |
+.import Users.dat User
+update User set Location = null where Location = 'None';
+update User set Country = null where Country = 'None';
+
+.import Items.dat Item
+.import Category.dat Category
+.import Bid.dat Bid
