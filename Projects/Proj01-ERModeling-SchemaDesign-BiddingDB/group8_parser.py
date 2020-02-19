@@ -4,6 +4,7 @@ from json import loads
 from re import sub
 import pandas as pd
 import os
+from collections import defaultdict
 
 columnSeparator = "|"
 
@@ -73,7 +74,11 @@ def parseJson(json_file):
         Started = transformDttm(item['Started'])
         Ends = transformDttm(item['Ends'])
         Description = item['Description']
-        Items.append((ItemID, Name, SellerID, Currently, First_Bid, Number_of_Bids, Started, Ends))
+        if 'Buy_Price' in item.keys():
+            Buy_Price = transformDollar(item['Buy_Price'])
+        else:
+            Buy_Price = 'None'
+        Items.append((ItemID, Name, SellerID, Currently, Buy_Price, First_Bid, Number_of_Bids, Started, Ends, Description))
         
         
         """
@@ -103,16 +108,17 @@ def parseJson(json_file):
                 BidderID = bid['Bid']['Bidder']['UserID']
                 Time = transformDttm(bid['Bid']['Time'])
                 Amount = transformDollar(bid['Bid']['Amount'])
-                Bids.append((BidderID, Time, Amount))
+                Bids.append((ItemID, BidderID, Time, Amount))
                 
                 """
                 Need to store bidders to the Person entity set
-                Not sure if any empty cases, some revision might be needed
+                Not sure if any empty cases, revision might be needed
                 """
-               
+                
                 BidderRating = bid['Bid']['Bidder']['Rating']
-                BidderLocation = bid['Bid']['Bidder']['Location']
-                BidderCountry = bid['Bid']['Bidder']['Country'] 
+                BidderLocation = bid['Bid']['Bidder'].setdefault('Location','None')
+                BidderCountry = bid['Bid']['Bidder'].setdefault('Country','None')
+          
                 Users.append((BidderID, BidderRating, BidderLocation, BidderCountry))
     
     
@@ -126,10 +132,10 @@ def parseJson(json_file):
     dfUsers.drop_duplicates(inplace=True)
     dfBids.drop_duplicates(inplace=True)
     
-    dfItems.to_csv(json_file + '_Items.dat', index=False, header=False)
-    dfCategory.to_csv(json_file + '_Category.dat', index=False, header=False)
-    dfUsers.to_csv(json_file + '_Users.dat', index=False, header=False)
-    dfBids.to_csv(json_file + '_Bid.dat', index=False, header=False)
+    dfItems.to_csv(json_file + '_Items.dat', index=False, header=False, sep='|')
+    dfCategory.to_csv(json_file + '_Category.dat', index=False, header=False, sep='|')
+    dfUsers.to_csv(json_file + '_Users.dat', index=False, header=False, sep='|')
+    dfBids.to_csv(json_file + '_Bid.dat', index=False, header=False, sep='|')
 
         
 """
