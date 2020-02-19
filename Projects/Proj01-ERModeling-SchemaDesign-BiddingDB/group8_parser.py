@@ -4,7 +4,6 @@ from json import loads
 from re import sub
 import pandas as pd
 import os
-from collections import defaultdict
 
 columnSeparator = "|"
 
@@ -120,12 +119,15 @@ def parseJson(json_file):
                 BidderCountry = bid['Bid']['Bidder'].setdefault('Country','None')
           
                 Users.append((BidderID, BidderRating, BidderLocation, BidderCountry))
-    
-    
+   
     dfItems = pd.DataFrame(Items).sort_values(by=[0])
     dfCategory = pd.DataFrame(Category).sort_values(by=[0])
     dfUsers = pd.DataFrame(Users).sort_values(by=[0])
-    dfBids = pd.DataFrame(Bids).sort_values(by=[0])
+
+    if Bids:
+        dfBids = pd.DataFrame(Bids).sort_values(by=[0])
+    else:
+        dfBids = pd.DataFrame(Bids)
     
     dfItems.drop_duplicates(inplace=True)
     dfCategory.drop_duplicates(inplace=True)
