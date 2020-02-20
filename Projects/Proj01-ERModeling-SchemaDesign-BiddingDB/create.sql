@@ -7,7 +7,7 @@ create table Item(
     ItemID Integer PRIMARY KEY,
     Name Text,
     SellerID Text,
-    Currently Text,
+    Currently Integer,
     Buy_Price Text,
     First_Bid Text,
     Number_of_Bids Text,
@@ -20,7 +20,7 @@ create table Bid(
     ItemID Text,
     BidderID Text, 
     Time Text, 
-    Amount Text, 
+    Amount Integer, 
     PRIMARY KEY(BidderID, Time, Amount),
     FOREIGN KEY(BidderID) REFERENCES User,
     FOREIGN KEY(ItemID) REFERENCES Item
