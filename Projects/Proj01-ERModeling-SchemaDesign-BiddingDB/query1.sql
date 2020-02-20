@@ -1,0 +1,1 @@
+SELECT count(User.UserID) as Users FROM User;
