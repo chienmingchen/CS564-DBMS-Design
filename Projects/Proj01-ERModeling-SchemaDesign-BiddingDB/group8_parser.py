@@ -45,6 +45,24 @@ def transformDollar(money):
     return sub(r'[^\d.]', '', money)
 
 
+def output(dic, filename):
+    with open(filename, 'w') as outfile:
+        for tup in dic:
+            for idx, item in enumerate(tup):
+                if type(item) == str:
+                    item_split = item.split('"')
+                    if len(item_split) > 1:
+                        item = ""
+                        for i, seg in enumerate(item_split):
+                            if seg != "":
+                                item += '"'
+                                item += seg
+                                item += '"'
+                outfile.write(str(item))
+                if idx != len(tup) - 1:
+                    outfile.write("|")
+            outfile.write("\n")
+
 """
 Parses a single json file. Currently, there's a loop that iterates over each
 item in the data set. Your job is to extend this functionality to create all
@@ -120,26 +138,11 @@ def parseJson(json_file):
           
                 Users.append((BidderID, BidderRating, BidderLocation, BidderCountry))
    
-    dfItems = pd.DataFrame(Items).sort_values(by=[0])
-    dfCategory = pd.DataFrame(Category).sort_values(by=[0])
-    dfUsers = pd.DataFrame(Users).sort_values(by=[0])
+    output(Items, json_file + '_Items.dat')
+    output(Category, json_file + '_Category.dat')
+    output(Users, json_file + '_Users.dat')
+    output(Bids, json_file + '_Bid.dat')
 
-    if Bids:
-        dfBids = pd.DataFrame(Bids).sort_values(by=[0])
-    else:
-        dfBids = pd.DataFrame(Bids)
-    
-    dfItems.drop_duplicates(inplace=True)
-    dfCategory.drop_duplicates(inplace=True)
-    dfUsers.drop_duplicates(inplace=True)
-    dfBids.drop_duplicates(inplace=True)
-    
-    dfItems.to_csv(json_file + '_Items.dat', index=False, header=False, sep='|')
-    dfCategory.to_csv(json_file + '_Category.dat', index=False, header=False, sep='|')
-    dfUsers.to_csv(json_file + '_Users.dat', index=False, header=False, sep='|')
-    dfBids.to_csv(json_file + '_Bid.dat', index=False, header=False, sep='|')
-
-        
 """
 Loops through each json files provided on the command line and passes each file
 to the parser
