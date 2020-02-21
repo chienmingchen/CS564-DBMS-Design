@@ -21,7 +21,7 @@ create table Bid(
     BidderID Text, 
     Time Text, 
     Amount Integer, 
-    PRIMARY KEY(BidderID, Time, Amount),
+    PRIMARY KEY(ItemID, BidderID, Time),
     FOREIGN KEY(BidderID) REFERENCES User,
     FOREIGN KEY(ItemID) REFERENCES Item
 );
