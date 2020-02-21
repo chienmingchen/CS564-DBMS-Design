@@ -15,7 +15,7 @@ create table Item(
     Ends Text,
     Description Text
 );
-create table Category(type Text, ItemID Text, FOREIGN KEY(ItemID) REFERENCES Item);
+create table Category(type Text, ItemID Text, PRIMARY KEY(type, ItemID),FOREIGN KEY(ItemID) REFERENCES Item);
 create table Bid(
     ItemID Text,
     BidderID Text, 
