@@ -20,14 +20,15 @@
     <student>
         <name>
             <!-- Insert your full name on the line below. -->
-            
+            Chien-Ming Chen
         </name>
         <netid>
             <!-- Insert your NetID (NOT your student ID number!) below. -->
-
+			cchen556
         </netid>
         <studentid>
             <!-- Insert your student ID number below. -->
+			9081715170
         </studentid>
     </student>
 
@@ -36,14 +37,31 @@
     <answer number="1a">
         <!-- Paste your solution to problem 1, part (a) below this line. --><![CDATA[
 
-
-
+		select distinct p1.provider
+		from hospital as p1, hospital as p2
+		where p1.provider = p2.provider and (p1.hospital != p2.hospital 
+											or p1.address != p2.address 
+											or p1.city != p2.city
+											or p1.state != p2.state
+											or p1.zip != p2.zip
+											or p1.county != p2.county
+											or p1.phone_number != p2.phone_number
+											or p1.hospital_type != p2.hospital_type
+											or p1.hospital_owner != p2.hospital_owner
+											or p1.emergency_service != p2.emergency_service
+											or p1.condition != p2.condition
+											or p1.measure_code != p2.measure_code) 
+		LIMIT 1
+		
         ]]><!-- End problem 1, part (a). -->
     </answer>
     <answer number="1b">
         <!-- Paste your solution to problem 1, part (b) below this line. --><![CDATA[
 
-
+		select p1.zip
+		from hospital as p1, hospital as p2
+		where p1.zip = p2.zip and (p1.city != p2.city or p1.state != p2.state)
+		LIMIT 1
 
         ]]><!-- End problem 1, part (b). -->
     </answer>
@@ -53,7 +71,9 @@
     <!-- BEGIN PROBLEM 2 -->
     <answer number="2a">
         <!-- Paste your solution to problem 2, part (a) below this line. --><![CDATA[
-
+		
+		answer = True
+		explanation = "A's closure is {A,C,D,E,F}, B's closure is {B}. {A,B}'s closure is {A,B,C,D,E,F}"
 
 
         ]]><!-- End problem 2, part (a). -->
@@ -61,6 +81,8 @@
     <answer number="2b">
         <!-- Paste your solution to problem 2, part (b) below this line. --><![CDATA[
 
+		answer = True
+		explanation = "after the Chase Algorithm, we can get a row w/o subscripts"
 
 
         ]]><!-- End problem 2, part (b). -->
@@ -68,21 +90,24 @@
     <answer number="2c">
         <!-- Paste your solution to problem 2, part (c) below this line. --><![CDATA[
 
-
+		answer = False
+		explanation = "There is no FD for {C,D,E}"
 
         ]]><!-- End problem 2, part (c). -->
     </answer>
     <answer number="2d">
         <!-- Paste your solution to problem 2, part (d) below this line. --><![CDATA[
 
-
+		answer = True
+		explanation = "By Transitivity, {A}->{D}->{C}, {A}->{D}->{F}, then {A}->{C}, {A}->{F}, then by Augmentation {A}->{C,F}"
 
         ]]><!-- End problem 2, part (d). -->
     </answer>
     <answer number="2e">
         <!-- Paste your solution to problem 2, part (e) below this line. --><![CDATA[
 
-
+		answer = False
+		explanation = "Becuase None of the left hand side of all FDs (neither A nor D) is a superkey"
 
         ]]><!-- End problem 2, part (e). -->
     </answer>
@@ -92,27 +117,28 @@
     <answer number="3a">
         <!-- Paste your solution to problem 3, part (a) below this line. --><![CDATA[
 
-
-
+		$$ \pi_{name}(\sigma_{affiliation="UW-Madison"}(Person) \bowtie (\pi_{name}(Autohor\bowtie\sigma_{year=2018}(JournalArticle)) - \pi_{name}(Autohor\bowtie\sigma_{year=2018}(ConferenceArticle)))) $$
+		
         ]]><!-- End problem 3, part (a). -->
     </answer>
     <answer number="3b">
         <!-- Paste your solution to problem 3, part (b) below this line. --><![CDATA[
 
-
+		$$ \pi_{name}(\sigma_{name!="John Doe"}(Author \bowtie (\pi_{articleID}(\sigma_{name="John Doe"}(Author \bowtie JournalArticle)) \cup \pi_{articleID}(\sigma_{name="John Doe"}(Author \bowtie ConferenceArticle))))) $$ 
 
         ]]><!-- End problem 3, part (b). -->
     </answer>
     <answer number="3c">
         <!-- Paste your solution to problem 3, part (c) below this line. --><![CDATA[
 
-
+		$$ \gamma_{count(articleID)}(\pi_{articleID}(\sigma_{year=2018}(JournalArticle) \bowtie \sigma_{name="John Doe"}(Author)) \cup \pi_{articleID}(\sigma_{year=2018}(ConferenceArticle) \bowtie \sigma_{name="John Doe"}(Author))) $$
 
         ]]><!-- End problem 3, part (c). -->
     </answer>
     <answer number="3d">
-    <!-- Paste your solution to problem 3, part (d) below this line. --><![CDATA[
+		<!-- Paste your solution to problem 3, part (d) below this line. --><![CDATA[
 
+		$$ \pi_{name}(\sigma_{2000 <= year \wedge year <= 2018 \wedge confnum >= journum} ( \rho_{name, year, confnum}(\gamma_{name, year, COUNT(articleID)} (Author \bowtie ConferenceArticle)) \bowtie \rho_{name, year, journum}(\gamma_{name, year, COUNT(articleID)} (Author \bowtie JournalArticle)))) $$
 
         ]]><!-- End problem 3, part (d). -->
     </answer>
