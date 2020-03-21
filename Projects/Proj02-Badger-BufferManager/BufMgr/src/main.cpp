@@ -166,11 +166,13 @@ void testBufMgr()
 	//Comment tests which you do not wish to run now. Tests are dependent on their preceding tests. So, they have to be run in the following order. 
 	//Commenting  a particular test requires commenting all tests that follow it else those tests would fail.
 	
-	fork_test(test1);
-	//fork_test(test2);
-	//fork_test(test3);
-	//fork_test(test4);
-	//fork_test(test5);
+	//task1 cannot be tested by fork
+	test1();
+	//fork_test(test1);
+	fork_test(test2);
+	fork_test(test3);
+	fork_test(test4);
+	fork_test(test5);
 	//fork_test(test6);
 
 	//Close files before deleting them
@@ -228,8 +230,9 @@ void test2()
 		sprintf((char*)tmpbuf, "test.2 Page %d %7.1f", pageno2, (float)pageno2);
 		rid2 = page2->insertRecord(tmpbuf);
 
+		
 		int index = random() % num;
-    	pageno1 = pid[index];
+    	        pageno1 = pid[index];
 		bufMgr->readPage(file1ptr, pageno1, page);
 		sprintf((char*)tmpbuf, "test.1 Page %d %7.1f", pageno1, (float)pageno1);
 		if(strncmp(page->getRecord(rid[index]).c_str(), tmpbuf, strlen(tmpbuf)) != 0)
