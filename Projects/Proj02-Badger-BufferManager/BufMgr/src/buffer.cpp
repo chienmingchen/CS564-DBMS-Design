@@ -169,6 +169,30 @@ void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty)
 
 void BufMgr::flushFile(const File* file) 
 {
+    // Scan through the buffer table
+    for (std::uint32_t i = 0; i < numBufs; i++) {
+        if (bufDescTable[i].file == file) {
+            // Throw BadBufferException if the page is invalid
+            if (!bufDescTable[i].valid)
+                throw BadBufferException(
+                    bufDescTable[i].frameNo, bufDescTable[i].dirty,
+                    bufDescTable[i].valid, bufDescTable[i].refbit);
+            // Throw PagePinnedException if the page is pinned
+            if (bufDescTable[i].pinCnt > 0)
+                throw PagePinnedException(file->filename(),
+                                          bufDescTable[i].pageNo,
+                                          bufDescTable[i].frameNo);
+            // Write to file if this page is dirty
+            if (bufDescTable[i].dirty) {
+                bufDescTable[i].file->writePage(bufPool[i]);
+                bufDescTable[i].dirty = false;
+            }
+            // Remove the page from hash table
+            hashTable->remove(file, bufDescTable[i].pageNo);
+            // Invoke the Clear() method of BufDesc for the page frame
+            bufDescTable[i].Clear();
+        }
+    }
 }
 
 void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
@@ -189,7 +213,18 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 
 void BufMgr::disposePage(File* file, const PageId PageNo)
 {
-    
+    // find the frameId of the page
+    FrameId frameNo;
+    try {
+        hashTable->lookup(file, PageNo, frameNo);
+        // delete the page from the buffer pool
+        bufDescTable[frameNo].Clear();
+    } catch (HashNotFoundException e) {
+        // frameId not found and do nothing
+    }
+
+    // delete the page from the file
+    file->deletePage(PageNo);
 }
 
 void BufMgr::printSelf(void) 
