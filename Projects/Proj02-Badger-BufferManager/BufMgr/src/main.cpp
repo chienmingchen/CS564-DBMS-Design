@@ -58,6 +58,10 @@ void test3();
 void test4();
 void test5();
 void test6();
+void test7();
+void test8();
+void test9();
+void test10();
 void testBufMgr();
 
 int main() 
@@ -172,6 +176,10 @@ void testBufMgr()
 	fork_test(test4);
 	fork_test(test5);
 	fork_test(test6);
+	fork_test(test7);
+	fork_test(test8);
+	fork_test(test9);
+	fork_test(test10);
 
 	//Close files before deleting them
 	file1.close();
@@ -335,4 +343,105 @@ void test6()
 		bufMgr->unPinPage(file1ptr, i, true);
 
 	bufMgr->flushFile(file1ptr);
+}
+
+void test7()
+{
+	// Test pin count
+	bufMgr->allocPage(file1ptr, pageno1, page);
+
+	// Read a single page multiple times to see if the pinCnt is the correct number
+	unsigned int num_read = 100;
+	for(i = 0; i < num_read; i++)
+		bufMgr->readPage(file1ptr, pageno1, page);
+	if(bufMgr->isInBuffer(file1ptr, pageno1)) {
+		if((unsigned)bufMgr->getPinCnt(file1ptr, pageno1) != num_read + 1) {
+			PRINT_ERROR("ERROR :: PIN COUNT AND NUMBER OF READ DID NOT MATCH");
+		}
+	} else {
+		PRINT_ERROR("ERROR :: PAGE IS NOT IN BUFFER");
+	}
+
+	// Unpin the page to see if the pinCnt is the correct number
+	unsigned int num_unpin = 70;
+	for(i = 0; i < num_unpin; i++)
+		bufMgr->unPinPage(file1ptr, pageno1, false);
+	if(bufMgr->isInBuffer(file1ptr, pageno1)) {
+		if((unsigned)bufMgr->getPinCnt(file1ptr, pageno1) != num_read - num_unpin + 1) {
+			PRINT_ERROR("ERROR :: PIN COUNT AND NUMBER OF READ DID NOT MATCH");
+		}
+	} else {
+		PRINT_ERROR("ERROR :: PAGE IS NOT IN BUFFER");
+	}
+
+	for (i = 0; i < num_read - num_unpin + 1; i++)
+		bufMgr->unPinPage(file1ptr, pageno1, false);
+
+	std::cout << "Test 7 passed" << "\n";
+}
+
+void test8()
+{
+	// Test dirty bit
+	bufMgr->allocPage(file1ptr, pageno1, page);
+
+	if(bufMgr->isInBuffer(file1ptr, pageno1)) {
+		if(bufMgr->getDirty(file1ptr, pageno1) != false) {
+			PRINT_ERROR("ERROR :: PAGE IS DIRTY BUT SHOULD NOT");
+		}
+	} else {
+		PRINT_ERROR("ERROR :: PAGE IS NOT IN BUFFER");
+	}
+
+	// Set the page's dirty bit
+	bufMgr->unPinPage(file1ptr, pageno1, true);
+	if(bufMgr->getDirty(file1ptr, pageno1) != true) {
+		PRINT_ERROR("ERROR :: PAGE IS NOT DIRTY BUT SHOULD BE");
+	}
+
+	std::cout << "Test 8 passed" << "\n";
+}
+
+void test9() {
+	// Test ref bit
+
+	// Fill the buffer
+	for(i = 0; i < num; i++)
+		bufMgr->allocPage(file1ptr, pid[i], page);
+
+	// Allocate a new page. Ref bits of page pid[1] to pid[num-1] should be cleared.
+	bufMgr->allocPage(file1ptr, pageno1, page);
+	for(i = 1; i < num; i++) {
+		if(bufMgr->getRefBit(file1ptr, pid[i]) != false) {
+			PRINT_ERROR("ERROR :: PAGE'S REFBIT SHOULD BE CLEARED");
+		}
+	}
+
+	std::cout << "Test 9 passed" << "\n";
+}
+
+void test10() {
+	// Test clock algorithm
+
+	// Fill the buffer
+	for(i = 0; i < num; i++)
+		bufMgr->allocPage(file1ptr, pid[i], page);
+	
+	// Allocate a new page. Page pid[0] should be removed from the buffer pool.
+	bufMgr->allocPage(file1ptr, pageno1, page);
+	if(bufMgr->isInBuffer(file1ptr, pid[0]) != false) {
+		PRINT_ERROR("ERROR :: PAGE ALLOCATED FIRSTLY SHOULD BE REMOVED FROM BUFFER POOL");
+	}
+
+	// Read page pid[1] and then allocate a new page. Page pid[2] should be removed.
+	bufMgr->readPage(file1ptr, pid[1], page);
+	bufMgr->allocPage(file1ptr, pageno1, page);
+	if(bufMgr->isInBuffer(file1ptr, pid[1]) != true) {
+		PRINT_ERROR("ERROR :: PAGE ALLOCATED SECONDLY SHOULD STILL BE IN BUFFER POOL");
+	}
+	if(bufMgr->isInBuffer(file1ptr, pid[2]) != true) {
+		PRINT_ERROR("ERROR :: PAGE ALLOCATED THIRDLY SHOULD BE REMOVED FROM BUFFER POOL");
+	}
+	
+	std::cout << "Test 10 passed" << "\n";
 }
