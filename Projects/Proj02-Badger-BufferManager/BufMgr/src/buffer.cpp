@@ -13,6 +13,7 @@
 #include "exceptions/page_pinned_exception.h"
 #include "exceptions/bad_buffer_exception.h"
 #include "exceptions/hash_not_found_exception.h"
+#include "exceptions/not_in_buffer_exception.h"
 
 namespace badgerdb { 
 
@@ -253,6 +254,66 @@ void BufMgr::printSelf(void)
   }
 
 	std::cout << "Total Number of Valid Frames:" << validFrames << "\n";
+}
+
+
+bool BufMgr::isInBuffer(File* file, const PageId pageNo) {
+	FrameId frameNo = 0;
+	try{
+		hashTable->lookup(file, pageNo, frameNo);
+	} catch(HashNotFoundException e) {
+		// the page is not in the buffer pool
+		return false;
+	}
+	return true;
+}
+
+int BufMgr::getPinCnt(File* file, const PageId pageNo) {
+	FrameId frameNo = 0;
+	try{
+		hashTable->lookup(file, pageNo, frameNo);
+	} catch(HashNotFoundException e) {
+		// the page is not in the buffer pool
+		throw NotInBufferException(file->filename(), pageNo);
+	}
+
+	return bufDescTable[frameNo].pinCnt;
+}
+
+bool BufMgr::getDirty(File* file, const PageId pageNo) {
+	FrameId frameNo = 0;
+	try{
+		hashTable->lookup(file, pageNo, frameNo);
+	} catch(HashNotFoundException e) {
+		// the page is not in the buffer pool
+		throw NotInBufferException(file->filename(), pageNo);
+	}
+
+	return bufDescTable[frameNo].dirty;
+}
+
+bool BufMgr::getValid(File* file, const PageId pageNo) {
+	FrameId frameNo = 0;
+	try{
+		hashTable->lookup(file, pageNo, frameNo);
+	} catch(HashNotFoundException e) {
+		// the page is not in the buffer pool
+		throw NotInBufferException(file->filename(), pageNo);
+	}
+
+	return bufDescTable[frameNo].valid;
+}
+
+bool BufMgr::getRefBit(File* file, const PageId pageNo) {
+	FrameId frameNo = 0;
+	try{
+		hashTable->lookup(file, pageNo, frameNo);
+	} catch(HashNotFoundException e) {
+		// the page is not in the buffer pool
+		throw NotInBufferException(file->filename(), pageNo);
+	}
+
+	return bufDescTable[frameNo].refbit;
 }
 
 }

@@ -285,6 +285,50 @@ class BufMgr
   {
 		bufStats.clear();
   }
+
+  	/**
+	 * Check if the page is in buffer pool.
+	 *
+	 * @param file   	File object
+	 * @param PageNo    Page number
+	 */
+	bool isInBuffer(File* file, const PageId PageNo);
+
+  	/**
+	 * Get the pin count of the page.
+	 *
+	 * @param file   	File object
+	 * @param PageNo    Page number
+	 * @throws NotInBufferException if the page is not in the buffer pool
+	 */
+	int getPinCnt(File* file, const PageId PageNo);
+
+  	/**
+	 * Get the dirty bit of the page.
+	 *
+	 * @param file   	File object
+	 * @param PageNo    Page number
+	 * @throws NotInBufferException if the page is not in the buffer pool
+	 */
+	bool getDirty(File* file, const PageId PageNo);
+
+  	/**
+	 * Get the valid bit of the page.
+	 *
+	 * @param file   	File object
+	 * @param PageNo    Page number
+	 * @throws NotInBufferException if the page is not in the buffer pool
+	 */
+	bool getValid(File* file, const PageId PageNo);
+
+  	/**
+	 * Get the reference bit of the page.
+	 *
+	 * @param file   	File object
+	 * @param PageNo    Page number
+	 * @throws NotInBufferException if the page is not in the buffer pool
+	 */
+	bool getRefBit(File* file, const PageId PageNo);
 };
 
 }
