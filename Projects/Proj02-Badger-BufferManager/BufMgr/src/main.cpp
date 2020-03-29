@@ -405,9 +405,11 @@ void test8()
 void test9() {
 	// Test ref bit
 
-	// Fill the buffer
-	for(i = 0; i < num; i++)
+	// Fill the buffer and unpin all pages in the buffer
+	for(i = 0; i < num; i++) {
 		bufMgr->allocPage(file1ptr, pid[i], page);
+		bufMgr->unPinPage(file1ptr, pid[i], false);
+	}
 
 	// Allocate a new page. Ref bits of page pid[1] to pid[num-1] should be cleared.
 	bufMgr->allocPage(file1ptr, pageno1, page);
@@ -423,9 +425,11 @@ void test9() {
 void test10() {
 	// Test clock algorithm
 
-	// Fill the buffer
-	for(i = 0; i < num; i++)
+	// Fill the buffer and unpin all pages in the buffer
+	for(i = 0; i < num; i++) {
 		bufMgr->allocPage(file1ptr, pid[i], page);
+		bufMgr->unPinPage(file1ptr, pid[i], false);
+	}
 	
 	// Allocate a new page. Page pid[0] should be removed from the buffer pool.
 	bufMgr->allocPage(file1ptr, pageno1, page);
@@ -439,7 +443,7 @@ void test10() {
 	if(bufMgr->isInBuffer(file1ptr, pid[1]) != true) {
 		PRINT_ERROR("ERROR :: PAGE ALLOCATED SECONDLY SHOULD STILL BE IN BUFFER POOL");
 	}
-	if(bufMgr->isInBuffer(file1ptr, pid[2]) != true) {
+	if(bufMgr->isInBuffer(file1ptr, pid[2]) != false) {
 		PRINT_ERROR("ERROR :: PAGE ALLOCATED THIRDLY SHOULD BE REMOVED FROM BUFFER POOL");
 	}
 	
