@@ -37,6 +37,8 @@ BufMgr::BufMgr(std::uint32_t bufs)
   hashTable = new BufHashTbl (htsize);  // allocate the buffer hash table
 
   clockHand = bufs - 1;
+
+  bufStats.clear();
 }
 
 
@@ -87,6 +89,8 @@ void BufMgr::allocBuf(FrameId & frame)
 				if(curr->dirty == true){
 					//if dirty, flush the page back to the disk
                 	curr->file->writePage(bufPool[clockHand]);
+					bufStats.accesses++;
+					bufStats.diskwrites++;
                 }
                 //clear hashtable, bufdesc table, and return the frameId
                 hashTable->remove(curr->file, curr->pageNo);
@@ -120,7 +124,9 @@ void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 		
 		//file->readPage() to read the page from disk into the frame
 		bufPool[frameNo]= file->readPage(pageNo);
-		page = &bufPool[frameNo];		
+		page = &bufPool[frameNo];	
+		bufStats.accesses += 2;	
+		bufStats.diskreads++;	
 		
 		//insert the page into the hashtable
 		hashTable->insert(file, pageNo, frameNo);
@@ -185,6 +191,8 @@ void BufMgr::flushFile(const File* file)
             // Write to file if this page is dirty
             if (bufDescTable[i].dirty) {
                 bufDescTable[i].file->writePage(bufPool[i]);
+				bufStats.accesses++;
+				bufStats.diskwrites++;
                 bufDescTable[i].dirty = false;
             }
             // Remove the page from hash table
@@ -204,6 +212,7 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 	//allocate an empty page for the speicfic file and assign it to the reserved farme
     bufPool[frameNo] = file->allocatePage();
 	page = &bufPool[frameNo];
+	bufStats.accesses += 2;
 	pageNo = page->page_number();
 	
 	//insert the page into the hashtable
@@ -225,6 +234,7 @@ void BufMgr::disposePage(File* file, const PageId PageNo)
 
     // delete the page from the file
     file->deletePage(PageNo);
+	bufStats.diskwrites++;
 }
 
 void BufMgr::printSelf(void) 
