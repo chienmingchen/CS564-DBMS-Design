@@ -44,7 +44,20 @@ BufMgr::BufMgr(std::uint32_t bufs)
 
 
 BufMgr::~BufMgr() {
+	
+	//Flushes out all dirty pages
+	for (std::uint32_t i = 0; i < numBufs; i++)
+	{
+	        if (bufDescTable[i].valid && bufDescTable[i].dirty)
+	        {
+			bufDescTable[i].file->writePage(bufPool[i]);
+                }
+        }
+	
+	//deallocates the buffer pool and the BufDesc table	
 	delete [] bufPool;
+	delete [] bufDescTable;
+	delete hashTable;
 }
 
 void BufMgr::advanceClock()

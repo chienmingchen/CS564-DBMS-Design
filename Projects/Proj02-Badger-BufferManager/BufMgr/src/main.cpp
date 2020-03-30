@@ -181,6 +181,8 @@ void testBufMgr()
 	fork_test(test9);
 	fork_test(test10);
 
+	delete bufMgr;
+	
 	//Close files before deleting them
 	file1.close();
 	file2.close();
@@ -194,8 +196,6 @@ void testBufMgr()
 	File::remove(filename3);
 	File::remove(filename4);
 	File::remove(filename5);
-
-	delete bufMgr;
 
 	std::cout << "\n" << "Passed all tests." << "\n";
 }
@@ -419,6 +419,9 @@ void test9() {
 		}
 	}
 
+	//release the pin for other tests
+	bufMgr->unPinPage(file1ptr, pageno1, false);
+	
 	std::cout << "Test 9 passed" << "\n";
 }
 
@@ -437,15 +440,27 @@ void test10() {
 		PRINT_ERROR("ERROR :: PAGE ALLOCATED FIRSTLY SHOULD BE REMOVED FROM BUFFER POOL");
 	}
 
-	// Read page pid[1] and then allocate a new page. Page pid[2] should be removed.
+	bufMgr->unPinPage(file1ptr, pageno1, false);
+
+	// Read page pid[1] and then allocate a new page
+	// 1. Page pid[1] should be read into the buffer pool
+	// 2. the previous unpinned page pageno1 should not be overriden
+	// 3. Page pid[2] should be removed because of the new allocation
 	bufMgr->readPage(file1ptr, pid[1], page);
 	bufMgr->allocPage(file1ptr, pageno1, page);
 	if(bufMgr->isInBuffer(file1ptr, pid[1]) != true) {
 		PRINT_ERROR("ERROR :: PAGE ALLOCATED SECONDLY SHOULD STILL BE IN BUFFER POOL");
 	}
+	if(bufMgr->isInBuffer(file1ptr, pageno1) != true) {
+		PRINT_ERROR("ERROR :: PREVIOUS UNPINNED PAGE SHOULD STILL BE IN BUFFER POOL");
+	}
 	if(bufMgr->isInBuffer(file1ptr, pid[2]) != false) {
 		PRINT_ERROR("ERROR :: PAGE ALLOCATED THIRDLY SHOULD BE REMOVED FROM BUFFER POOL");
 	}
 	
+	//unpinned test pages for other tests
+	bufMgr->unPinPage(file1ptr, pid[1], false);
+	bufMgr->unPinPage(file1ptr, pageno1, false);
+
 	std::cout << "Test 10 passed" << "\n";
 }
