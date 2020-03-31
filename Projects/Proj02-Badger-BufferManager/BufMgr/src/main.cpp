@@ -266,7 +266,6 @@ void test2()
 			PRINT_ERROR("ERROR :: CONTENTS DID NOT MATCH");
 		}
 
-		bufMgr->unPinPage(file1ptr, pageno1, false);
 	}
 
 	for (i = 0; i < num/3; i++) {
