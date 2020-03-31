@@ -189,14 +189,10 @@ void testBufMgr()
 	fork_test(test10);
 	fork_test(test11);
 
-	file6.close();
-        file6 = File::open(filename6);
-	test12();
-
+        test12();
 	delete bufMgr;
+        test13();
 	
-	//test13();
-
 	//Close files before deleting them
 	file1.close();
 	file2.close();
@@ -483,7 +479,7 @@ void test10() {
 
 void test11() {
 
-    // Test clock algorithm
+    // a scenario for overall test
     
     for (i = 0; i < num-1; i++) 
     {
@@ -512,16 +508,21 @@ void test11() {
 	PRINT_ERROR("ERROR :: UNPINNED PAGE SHOULD NOT BE IN BUFFER POOL");
     }
 
-    //upin page#num and #num+1 then read page#num-1 back, 
-    //page#num-1 should replace by page#num
+    //upin page#num(frame num-1) and dispose #num+1(frame num-2) 
+    //then read page#num-1 back, clock will go num-1->num-2->num-1
+    //page#num should replace by page#num-1
     bufMgr->unPinPage(file6ptr, num, true);
-    bufMgr->unPinPage(file6ptr, num+1, true);
+    bufMgr->disposePage(file6ptr, num+1);
     bufMgr->readPage(file6ptr, num-1, page);
     
     if(bufMgr->isInBuffer(file6ptr, num) == true) {
 	PRINT_ERROR("ERROR :: page#num should be replaced by page#num-1");
     }
-    
+    //bufMgr->printSelf();
+    if(bufMgr->isInBuffer(file6ptr, num+1) == true) {
+    	PRINT_ERROR("ERROR :: page#num+1 should be disposed");
+    }
+
     //read page#num back to override page#num+1
     bufMgr->readPage(file6ptr, num, page);
     
@@ -549,7 +550,7 @@ void test11() {
 
 void test12()
 {
-  //test flush and dirty bit
+  //check the correctness of the previous flush and dirty bit
   for(i = 1; i <= num ; i++)
   {
     rid6.page_number = i;
@@ -563,26 +564,39 @@ void test12()
   }
   std::cout << "Test 12 passed" << "\n";
 
-  //update record for test13
+  //update record for test13 test
   page->updateRecord(rid6, "Hello Kitty");
   bufMgr->unPinPage(file6ptr, num, true);
+  rid6.page_number--;
+  bufMgr->readPage(file6ptr, num-1, page);
+  page->updateRecord(rid6, "Hello Kitty");
+  bufMgr->unPinPage(file6ptr, num-1, false);
 
+  //bufMgr->printSelf();
 }
 
 
 void test13()
-{
-  
+{ 
+  //test whether destrcuctor write back the dirty pages
   rid6.page_number = num;
   rid6.slot_number = 1;
-  *page = file6ptr->readPage(num);
-  //page = file6.read(num);
+  Page test = file6ptr->readPage(num);
   sprintf((char*)&tmpbuf, "Hello Kitty");
-  if(strncmp(page->getRecord(rid6).c_str(), tmpbuf, strlen(tmpbuf)) != 0)
+  if(strncmp(test.getRecord(rid6).c_str(), tmpbuf, strlen(tmpbuf)) != 0)
+  {
+     std::cout << test.getRecord(rid6).c_str() << "\n";
+     PRINT_ERROR("ERROR :: CONTENTS Hello Kitty DID NOT MATCH");
+  }
+  
+  rid6.page_number--;
+  test = file6ptr->readPage(num-1);
+  sprintf((char*)&tmpbuf, "Hello World");
+  if(strncmp(test.getRecord(rid6).c_str(), tmpbuf, strlen(tmpbuf)) != 0)
   {
      PRINT_ERROR("ERROR :: CONTENTS DID NOT MATCH");
-  }	
-
+  }
+  
   std::cout << "Test 13 passed" << "\n";
 }
 
