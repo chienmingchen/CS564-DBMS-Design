@@ -77,9 +77,10 @@ void BufMgr::allocBuf(FrameId & frame)
 		//2.load current frame status
 		BufDesc* curr = &bufDescTable[clockHand];
 
-		//!!!3.check if valid bit is set 
+		//3.check if valid bit is set 
 		if(curr->valid == false) {
-			//not sure what to do with this case yet
+			//return the available frame, readPage 
+			//and allocPage will take over hash and set
 			frame = clockHand;
         	return;
     	}
@@ -230,8 +231,10 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 	pageNo = page->page_number();
 	
 	//insert the page into the hashtable
-    bufDescTable[frameNo].Set(file, pageNo); 
     hashTable->insert(file, pageNo, frameNo);
+	//Finally, invoke Set() on the frame
+    bufDescTable[frameNo].Set(file, pageNo); 
+
 }
 
 void BufMgr::disposePage(File* file, const PageId PageNo)

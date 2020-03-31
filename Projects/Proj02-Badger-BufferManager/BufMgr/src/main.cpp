@@ -45,12 +45,12 @@ int fork_test(void (*test)())
 using namespace badgerdb;
 
 const PageId num = 100;
-PageId pid[num], pageno1, pageno2, pageno3, i;
-RecordId rid[num], rid2, rid3;
+PageId pid[num], pageno1, pageno2, pageno3, pageno6, i;
+RecordId rid[num], rid2, rid3, rid6;
 Page *page, *page2, *page3;
 char tmpbuf[100];
 BufMgr* bufMgr;
-File *file1ptr, *file2ptr, *file3ptr, *file4ptr, *file5ptr;
+File *file1ptr, *file2ptr, *file3ptr, *file4ptr, *file5ptr, *file6ptr;
 
 void test1();
 void test2();
@@ -62,6 +62,9 @@ void test7();
 void test8();
 void test9();
 void test10();
+void test11();
+void test12();
+void test13();
 void testBufMgr();
 
 int main() 
@@ -141,6 +144,7 @@ void testBufMgr()
   const std::string& filename3 = "test.3";
   const std::string& filename4 = "test.4";
   const std::string& filename5 = "test.5";
+  const std::string& filename6 = "test.6";
 
   try
 	{
@@ -149,6 +153,7 @@ void testBufMgr()
     File::remove(filename3);
     File::remove(filename4);
     File::remove(filename5);
+    File::remove(filename6);
   }
 	catch(FileNotFoundException &e)
 	{
@@ -159,12 +164,14 @@ void testBufMgr()
 	File file3 = File::create(filename3);
 	File file4 = File::create(filename4);
 	File file5 = File::create(filename5);
+	File file6 = File::create(filename6);
 
 	file1ptr = &file1;
 	file2ptr = &file2;
 	file3ptr = &file3;
 	file4ptr = &file4;
 	file5ptr = &file5;
+	file6ptr = &file6;
 
 	//Test buffer manager
 	//Comment tests which you do not wish to run now. Tests are dependent on their preceding tests. So, they have to be run in the following order. 
@@ -180,15 +187,23 @@ void testBufMgr()
 	fork_test(test8);
 	fork_test(test9);
 	fork_test(test10);
+	fork_test(test11);
+
+	file6.close();
+        file6 = File::open(filename6);
+	test12();
 
 	delete bufMgr;
 	
+	//test13();
+
 	//Close files before deleting them
 	file1.close();
 	file2.close();
 	file3.close();
 	file4.close();
 	file5.close();
+	file6.close();
 
 	//Delete files
 	File::remove(filename1);
@@ -196,6 +211,7 @@ void testBufMgr()
 	File::remove(filename3);
 	File::remove(filename4);
 	File::remove(filename5);
+	File::remove(filename6);
 
 	std::cout << "\n" << "Passed all tests." << "\n";
 }
@@ -458,9 +474,115 @@ void test10() {
 		PRINT_ERROR("ERROR :: PAGE ALLOCATED THIRDLY SHOULD BE REMOVED FROM BUFFER POOL");
 	}
 	
-	//unpinned test pages for other tests
+	//unpinned test pages to reserve the space for other tests
 	bufMgr->unPinPage(file1ptr, pid[1], false);
 	bufMgr->unPinPage(file1ptr, pageno1, false);
 
 	std::cout << "Test 10 passed" << "\n";
 }
+
+void test11() {
+
+    // Test clock algorithm
+    
+    for (i = 0; i < num-1; i++) 
+    {
+	bufMgr->allocPage(file6ptr, pageno6, page);
+	sprintf((char*)tmpbuf, "Hello World");
+        rid6 = page->insertRecord(tmpbuf);
+	//std::cout << "rid:" << rid6.page_number << " "  << rid6.slot_number << "\n";
+    }
+     
+    //current unpinned page won't be overriden because more than one availble frame
+    bufMgr->unPinPage(file6ptr, num-1, true);
+    bufMgr->allocPage(file6ptr, pageno6, page);
+    sprintf((char*)tmpbuf, "Hello World");
+    rid6 = page->insertRecord(tmpbuf);
+    
+    if(bufMgr->isInBuffer(file6ptr, num-1) != true) {
+	PRINT_ERROR("ERROR :: UNPINNED PAGE SHOULD STILL BE IN BUFFER POOL");
+    }
+   
+    //current unpinned frame must be overriden because only one frame left
+    bufMgr->allocPage(file6ptr, pageno6, page);
+    sprintf((char*)tmpbuf, "Hello World");
+    rid6 = page->insertRecord(tmpbuf);
+
+    if(bufMgr->isInBuffer(file6ptr, num-1) == true) {
+	PRINT_ERROR("ERROR :: UNPINNED PAGE SHOULD NOT BE IN BUFFER POOL");
+    }
+
+    //upin page#num and #num+1 then read page#num-1 back, 
+    //page#num-1 should replace by page#num
+    bufMgr->unPinPage(file6ptr, num, true);
+    bufMgr->unPinPage(file6ptr, num+1, true);
+    bufMgr->readPage(file6ptr, num-1, page);
+    
+    if(bufMgr->isInBuffer(file6ptr, num) == true) {
+	PRINT_ERROR("ERROR :: page#num should be replaced by page#num-1");
+    }
+    
+    //read page#num back to override page#num+1
+    bufMgr->readPage(file6ptr, num, page);
+    
+
+    //now all buffer frame 0~num-1 are used where page = 1~num
+    for (i = 1; i <= num; i++)
+    {
+	//all pages are in the buffer pool which can be read without allocating new page
+	//because buffer is full, it will casue exception if any page is not in the buffer
+        bufMgr->readPage(file6ptr, i, page);
+    }
+
+
+    //unpin all pages and flush buffer
+    for (i = 1; i <= num; i++)
+    {
+      bufMgr->unPinPage(file6ptr, i, false);
+      bufMgr->unPinPage(file6ptr, i, true);
+    }
+    bufMgr->flushFile(file6ptr);
+   
+    std::cout << "Test 11 passed" << "\n";
+
+}
+
+void test12()
+{
+  //test flush and dirty bit
+  for(i = 1; i <= num ; i++)
+  {
+    rid6.page_number = i;
+    rid6.slot_number = 1;
+    bufMgr->readPage(file6ptr, i, page);
+    sprintf((char*)&tmpbuf, "Hello World");
+    if(strncmp(page->getRecord(rid6).c_str(), tmpbuf, strlen(tmpbuf)) != 0)
+    {
+      PRINT_ERROR("ERROR :: CONTENTS DID NOT MATCH");
+    }
+  }
+  std::cout << "Test 12 passed" << "\n";
+
+  //update record for test13
+  page->updateRecord(rid6, "Hello Kitty");
+  bufMgr->unPinPage(file6ptr, num, true);
+
+}
+
+
+void test13()
+{
+  
+  rid6.page_number = num;
+  rid6.slot_number = 1;
+  *page = file6ptr->readPage(num);
+  //page = file6.read(num);
+  sprintf((char*)&tmpbuf, "Hello Kitty");
+  if(strncmp(page->getRecord(rid6).c_str(), tmpbuf, strlen(tmpbuf)) != 0)
+  {
+     PRINT_ERROR("ERROR :: CONTENTS DID NOT MATCH");
+  }	
+
+  std::cout << "Test 13 passed" << "\n";
+}
+
