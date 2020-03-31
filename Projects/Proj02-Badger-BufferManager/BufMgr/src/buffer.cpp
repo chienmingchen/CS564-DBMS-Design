@@ -45,10 +45,11 @@ BufMgr::BufMgr(std::uint32_t bufs)
 
 BufMgr::~BufMgr() {
 	
+	//this->printSelf();
 	//Flushes out all dirty pages
 	for (std::uint32_t i = 0; i < numBufs; i++)
 	{
-	        if (bufDescTable[i].valid && bufDescTable[i].dirty)
+		if (bufDescTable[i].valid && bufDescTable[i].dirty)
 	        {
 			bufDescTable[i].file->writePage(bufPool[i]);
                 }
@@ -243,6 +244,8 @@ void BufMgr::disposePage(File* file, const PageId PageNo)
     FrameId frameNo;
     try {
         hashTable->lookup(file, PageNo, frameNo);
+	// need to remove the record from the hashTable
+	hashTable->remove(file, PageNo);
         // delete the page from the buffer pool
         bufDescTable[frameNo].Clear();
     } catch (HashNotFoundException e) {
