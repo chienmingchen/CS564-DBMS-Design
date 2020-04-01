@@ -218,14 +218,26 @@ $(function() {
 <li>getBufStats()
 : <a class="el" href="classbadgerdb_1_1_buf_mgr.html#a93148e1af99f06f4f264d948920b7c1c">badgerdb::BufMgr</a>
 </li>
+<li>getDirty()
+: <a class="el" href="classbadgerdb_1_1_buf_mgr.html#a497966c98874184d532b166265f684b2">badgerdb::BufMgr</a>
+</li>
 <li>getFreeSpace()
 : <a class="el" href="classbadgerdb_1_1_page.html#a6f8c9e50538db4d88306b77c214c09dd">badgerdb::Page</a>
 </li>
 <li>getNextUsedSlot()
 : <a class="el" href="classbadgerdb_1_1_page_iterator.html#a9433759a0a85c4f362a0ef2d511d7014">badgerdb::PageIterator</a>
 </li>
+<li>getPinCnt()
+: <a class="el" href="classbadgerdb_1_1_buf_mgr.html#a3319afff30f046f7e70d0796485e8efa">badgerdb::BufMgr</a>
+</li>
 <li>getRecord()
 : <a class="el" href="classbadgerdb_1_1_page.html#aad81fa59b469866fbd260c8a640b579f">badgerdb::Page</a>
+</li>
+<li>getRefBit()
+: <a class="el" href="classbadgerdb_1_1_buf_mgr.html#afe93975b005eeb82fe915ce190ed87e3">badgerdb::BufMgr</a>
+</li>
+<li>getValid()
+: <a class="el" href="classbadgerdb_1_1_buf_mgr.html#aba27f41b95f5e3d000a1a9d68c723860">badgerdb::BufMgr</a>
 </li>
 </ul>
 
@@ -271,6 +283,9 @@ $(function() {
 <li>InvalidSlotException()
 : <a class="el" href="classbadgerdb_1_1_invalid_slot_exception.html#a60f721f46b7aeacc655e1f3f0423314d">badgerdb::InvalidSlotException</a>
 </li>
+<li>isInBuffer()
+: <a class="el" href="classbadgerdb_1_1_buf_mgr.html#a9cca22f4dbb9883bbecabe6e24024dcf">badgerdb::BufMgr</a>
+</li>
 <li>isOpen()
 : <a class="el" href="classbadgerdb_1_1_file.html#a64836156a9bb5f81d2c2c4e6f3ada24d">badgerdb::File</a>
 </li>
@@ -304,6 +319,7 @@ $(function() {
 <li>name
 : <a class="el" href="classbadgerdb_1_1_hash_already_present_exception.html#a3c7470b1b701e5a5a35fd98692118c47">badgerdb::HashAlreadyPresentException</a>
 , <a class="el" href="classbadgerdb_1_1_hash_not_found_exception.html#aaa19f545bf6c6c18d7907c31ed48fd89">badgerdb::HashNotFoundException</a>
+, <a class="el" href="classbadgerdb_1_1_not_in_buffer_exception.html#a437723eca790831a8b867624f50ac537">badgerdb::NotInBufferException</a>
 , <a class="el" href="classbadgerdb_1_1_page_not_pinned_exception.html#a927b401b56f4ae042e2ba55599898e3c">badgerdb::PageNotPinnedException</a>
 , <a class="el" href="classbadgerdb_1_1_page_pinned_exception.html#ad7e83fd94b72c492b5631749a7b74e41">badgerdb::PagePinnedException</a>
 </li>
@@ -313,6 +329,9 @@ $(function() {
 <li>next_page_number()
 : <a class="el" href="classbadgerdb_1_1_page.html#a9524d4507a600c1bd55bdc5b9511a484">badgerdb::Page</a>
 , <a class="el" href="structbadgerdb_1_1_page_header.html#a7cb8260dedb0748d3d75c4b1722dcf3c">badgerdb::PageHeader</a>
+</li>
+<li>NotInBufferException()
+: <a class="el" href="classbadgerdb_1_1_not_in_buffer_exception.html#afa8fcd178eff6373074cfc92c1436245">badgerdb::NotInBufferException</a>
 </li>
 <li>num_free_pages
 : <a class="el" href="structbadgerdb_1_1_file_header.html#a07ac20f98d6aced3eb5358e0d4830abc">badgerdb::FileHeader</a>
@@ -381,12 +400,13 @@ $(function() {
 , <a class="el" href="classbadgerdb_1_1_slot_in_use_exception.html#ac642a1e924871da0a7354ba3eef5dcfe">badgerdb::SlotInUseException</a>
 </li>
 <li>PageIterator()
-: <a class="el" href="classbadgerdb_1_1_page_iterator.html#ad376a4999169f299874aa85252bca71b">badgerdb::PageIterator</a>
+: <a class="el" href="classbadgerdb_1_1_page_iterator.html#a612d51abd634209c03d672f1328bbc62">badgerdb::PageIterator</a>
 </li>
 <li>pageNo
 : <a class="el" href="classbadgerdb_1_1_hash_already_present_exception.html#ac7ae8bbb4e5fce8f134e281054b1bea1">badgerdb::HashAlreadyPresentException</a>
 , <a class="el" href="structbadgerdb_1_1hash_bucket.html#af81c5ca74d02362df3fab9bd4c471da5">badgerdb::hashBucket</a>
 , <a class="el" href="classbadgerdb_1_1_hash_not_found_exception.html#a44d80c87796cffbf557c4d99e686d7b9">badgerdb::HashNotFoundException</a>
+, <a class="el" href="classbadgerdb_1_1_not_in_buffer_exception.html#ab5ba84c1a8d5247727bc27cbd7543efd">badgerdb::NotInBufferException</a>
 , <a class="el" href="classbadgerdb_1_1_page_not_pinned_exception.html#a05410fa2b64f2aa1c1ad479018346d26">badgerdb::PageNotPinnedException</a>
 , <a class="el" href="classbadgerdb_1_1_page_pinned_exception.html#a46291c9ac61ad9770cf39ef315263f78">badgerdb::PagePinnedException</a>
 </li>
