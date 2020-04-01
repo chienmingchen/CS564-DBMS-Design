@@ -1,6 +1,11 @@
 /**
  * @author See Contributors.txt for code contributors and overview of BadgerDB.
  *
+ * @Modified by
+ * Chien-Ming Chen (id:9081715170)
+ * Hao-Lun Hsu     (id:9081439458)
+ * RENG-HUNG SHIH  (id:9075297623)
+ *
  * @section LICENSE
  * Copyright (c) 2012 Database Group, Computer Sciences Department, University of Wisconsin-Madison.
  */
