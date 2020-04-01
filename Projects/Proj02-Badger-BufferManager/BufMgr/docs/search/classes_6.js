@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['slotinuseexception',['SlotInUseException',['../classbadgerdb_1_1_slot_in_use_exception.html',1,'badgerdb']]]
+  ['recordid',['RecordId',['../structbadgerdb_1_1_record_id.html',1,'badgerdb']]]
 ];

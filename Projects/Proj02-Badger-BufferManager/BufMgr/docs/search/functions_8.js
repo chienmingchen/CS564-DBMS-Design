@@ -6,5 +6,6 @@ var searchData=
   ['invalidpageexception',['InvalidPageException',['../classbadgerdb_1_1_invalid_page_exception.html#a95454bbb13eafd87874c0dd538cc4fa8',1,'badgerdb::InvalidPageException']]],
   ['invalidrecordexception',['InvalidRecordException',['../classbadgerdb_1_1_invalid_record_exception.html#a317a2fda3088cbf04a24189f089a68ed',1,'badgerdb::InvalidRecordException']]],
   ['invalidslotexception',['InvalidSlotException',['../classbadgerdb_1_1_invalid_slot_exception.html#a60f721f46b7aeacc655e1f3f0423314d',1,'badgerdb::InvalidSlotException']]],
+  ['isinbuffer',['isInBuffer',['../classbadgerdb_1_1_buf_mgr.html#a9cca22f4dbb9883bbecabe6e24024dcf',1,'badgerdb::BufMgr']]],
   ['isopen',['isOpen',['../classbadgerdb_1_1_file.html#a64836156a9bb5f81d2c2c4e6f3ada24d',1,'badgerdb::File']]]
 ];
