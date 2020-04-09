@@ -529,6 +529,47 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 }
 
 // -----------------------------------------------------------------------------
+// BTreeIndex::printTreeFromRoot
+// -----------------------------------------------------------------------------
+const void BTreeIndex::printTreeFromRoot()
+{
+	printTree(rootPageNum, nodeOccupancy == 0);
+} 
+
+// -----------------------------------------------------------------------------
+// BTreeIndex::printTree
+// -----------------------------------------------------------------------------
+const void BTreeIndex::printTree(const PageId pageId, bool isLeafNode)
+{
+	std::cout << "Page id: " << pageId << "  ";
+
+	Page* page;
+	bufMgr->readPage(file, pageId, page);
+	if(isLeafNode) {
+		LeafNodeInt* node = reinterpret_cast<LeafNodeInt*>(page);
+		for(int i = 0; i < node->length; i++) {
+			std::cout << node->keyArray[i] << "/ \\";
+		}
+		std::cout << std::endl;
+	} else {
+		NonLeafNodeInt* node = reinterpret_cast<NonLeafNodeInt*>(page);
+		std::cout << "/" << node->pageNoArray[0] << "\\";
+		for(int i = 0; i < node->length; i++) {
+			std::cout << node->keyArray[i] << "/" << node->pageNoArray[i+1] << "\\";
+		}
+		std::cout << std::endl;
+
+		bool isChildrenLeaf = (node->level == 1);
+		printTree(node->pageNoArray[0], isChildrenLeaf);
+		for(int i = 0; i < node->length; i++) {
+			printTree(node->pageNoArray[i], isChildrenLeaf);
+		}
+	}
+	
+	bufMgr->unPinPage(file, pageId, false);
+} 
+
+// -----------------------------------------------------------------------------
 // BTreeIndex::startScan
 // -----------------------------------------------------------------------------
 

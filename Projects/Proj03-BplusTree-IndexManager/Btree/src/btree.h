@@ -406,6 +406,17 @@ class BTreeIndex {
 	**/
 	const void insertEntry(const void* key, const RecordId rid);
 
+  /**
+	* Print the Btree from root node
+	**/
+   const void printTreeFromRoot();
+
+  /**
+	* Print the Btree. 
+   * @param pageId		         Root node of this tree
+   * @param isLeafNode		      Whether this node is a leaf node or not
+	**/
+   const void printTree(const PageId pageId, bool isLeafNode);
 
   /**
 	 * Begin a filtered scan of the index.  For instance, if the method is called 
