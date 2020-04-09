@@ -74,10 +74,8 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		bufMgr->unPinPage(file, 1, false);
 	} else {
 		// The index file does not exist, create a new one
-		try {
-			BlobFile newFile = BlobFile::create(outIndexName); // potential bug: in stack?
-			file = &newFile;
-		} catch(FileNotFoundException e) {}
+		BlobFile newFile = BlobFile::create(outIndexName);
+		file = &newFile;
 
 		// Create a meta data page on file
 		PageId metaPageId;
@@ -140,7 +138,6 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 BTreeIndex::~BTreeIndex()
 {
-	delete file;
 }
 
 // -----------------------------------------------------------------------------
@@ -192,7 +189,7 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 			// Find next pageId
 			found = false;
 			for(int i = 0; i < INTARRAYNONLEAFSIZE; i++) {
-				if(*key <= node->keyArray[i]) { //TODO: may need to use custom operator
+				if(*key < node->keyArray[i]) { //TODO: may need to use custom operator
 					// Unpin the current page
 					bufMgr->unPinPage(file, nextPageId, false);
 					// Assign the next page id
@@ -376,7 +373,7 @@ void BTreeIndex::splitLeafNode(PageId pageId,
 	leafOccupancy++;
 
 	// Fill the return newKey, outLeftNodePageId and rightLeafPageId
-	newKey = oriKeyArray[halfSize - 1];
+	newKey = oriKeyArray[halfSize];
 	outLeftNodePageId = leftLeafPageId;
 	outRightNodePageId = rightLeafPageId;
 	
