@@ -151,6 +151,11 @@ struct NonLeafNodeInt{
    */
 	int keyArray[ INTARRAYNONLEAFSIZE ];
 
+	/**
+   * The number of keys stored
+   */
+	int length;
+
   /**
    * Stores page numbers of child pages which themselves are other non-leaf/leaf nodes in the tree.
    */
@@ -171,6 +176,11 @@ struct LeafNodeInt{
    * Stores RecordIds.
    */
 	RecordId ridArray[ INTARRAYLEAFSIZE ];
+
+	/**
+   * The number of keys stored
+   */
+	int length;
 
   /**
    * Page number of the leaf on the right side.
@@ -291,7 +301,73 @@ class BTreeIndex {
    */
 	Operator	highOp;
 
-	
+  /**
+	* Initialize a LeafNodeInt. 
+   * @param node	   Node to be initialized.
+	**/
+  void initLeafNode(LeafNodeInt* node);
+
+  /**
+	* Initialize a NonLeafNodeInt. 
+   * @param node	   Node to be initialized.
+	**/
+  void initNonLeafNode(NonLeafNodeInt* node);
+
+  /**
+	* Search and return the leaf node according to input parameter key. 
+	* Start from root to recursively find out the leaf.
+   * @param key			Key to search, pointer to integer/double/char string
+   * @param outNode 	   Reference to the target leaf node.
+   * @param path			Reference to a vector which stores the path from the root node to the target node.
+   * @return  Page number of the leaf node.
+	**/
+   PageId searchEntry(int* key, LeafNodeInt*& outNode, std::vector<PageId> &path);
+
+  /**
+	* Split a full non-leaf node into two non-leaf nodes. 
+   * @param pageId		         Page (i.e. node) to be splitted
+   * @param key   			      Key to split
+   * @param leftNodePageId		   Left child node of the key
+   * @param rightNodePageId	   Right child node of the key
+   * @param newKey          	   Reference to the key to split its parent node
+   * @param outLeftNodePageId	Reference to the left child node of newKey
+   * @param outRightNodePageId	Reference to the right child node of newKey
+   * @throws NonLeafNodeNotFullException  If this node is not full (i.e. no need to be splitted)
+	**/
+   void splitNonLeafNode(PageId pageId, 
+								const int key,
+								PageId leftNodePageId,
+								PageId rightNodePageId,
+								int& newKey,
+								PageId& outLeftNodePageId,
+								PageId& outRightNodePageId);
+  /**
+	* Split a full non-leaf node into two non-leaf nodes. 
+   * @param pageId		         Page (i.e. node) to be splitted
+   * @param ridkeypair		      Key-rid pair to split
+   * @param newKey          	   Reference to the key to split its parent node
+   * @param outLeftNodePageId 	Reference to the left child node of newKey
+   * @param outRightNodePageId	Reference to the right child node of newKey
+   * @throws LeafNodeNotFullException  If this node is not full (i.e. no need to be splitted)
+	**/
+   void splitLeafNode(PageId pageId, 
+								RIDKeyPair<int> ridkeypair, 
+								int& newKey,
+								PageId& outLeftNodePageId,
+								PageId& outRightNodePageId);
+
+  /**
+	* Create a new root node. 
+   * @param newKey		         Key to be added
+   * @param leftPageId		      Left child node of Key
+   * @param rightPageId          Right child node of Key
+   * @param level 	            level of the new root node
+	**/
+   void createNewRootNode(int newKey, 
+                           PageId leftPageId, 
+                           PageId rightPageId,
+                           int level);
+
  public:
 
   /**
