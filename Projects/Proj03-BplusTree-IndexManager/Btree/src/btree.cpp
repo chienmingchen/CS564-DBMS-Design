@@ -51,10 +51,8 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	
 	if(File::exists(outIndexName)) {
 		// The index file exists, open it
-		try {
-			BlobFile newFile = BlobFile::open(outIndexName); // potential bug: in stack?
-			file = &newFile;
-		} catch(FileExistsException e) {}
+		BlobFile newFile = BlobFile::open(outIndexName); // potential bug: in stack?
+		file = &newFile;
 
 		Page* metaPage;
 		bufMgr->readPage(file, 1, metaPage); //TODO: not sure if meta data page id is always 1?
