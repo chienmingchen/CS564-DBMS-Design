@@ -41,6 +41,9 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	this->attrByteOffset = attrByteOffset;
 	attributeType = attrType;
 
+	nodeOccupancy = INTARRAYNONLEAFSIZE;
+	leafOccupancy = INTARRAYLEAFSIZE;
+
 	numLeafNode = 0;
 	numNonLeafNode = 0;
 
@@ -142,7 +145,7 @@ BTreeIndex::~BTreeIndex()
 // BTreeIndex::initLeafNode
 // -----------------------------------------------------------------------------
 void BTreeIndex::initLeafNode(LeafNodeInt* node) {
-	for(int i = 0; i < INTARRAYLEAFSIZE; i++) {
+	for(int i = 0; i < leafOccupancy; i++) {
 		node->keyArray[i] = 0;
 	}
 	node->length = 0;
@@ -153,7 +156,7 @@ void BTreeIndex::initLeafNode(LeafNodeInt* node) {
 // BTreeIndex::initNonLeafNode
 // -----------------------------------------------------------------------------
 void BTreeIndex::initNonLeafNode(NonLeafNodeInt* node) {
-	for(int i = 0; i < INTARRAYNONLEAFSIZE; i++) {
+	for(int i = 0; i < nodeOccupancy; i++) {
 		node->keyArray[i] = 0;
 	}
 	node->length = 0;
@@ -234,7 +237,7 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 	Page* leftPage;
 	bufMgr->readPage(file, leftPageId, leftPage);
 	NonLeafNodeInt* leftNode = reinterpret_cast<NonLeafNodeInt*>(leftPage);
-	if(leftNode->length != INTARRAYNONLEAFSIZE) {
+	if(leftNode->length != nodeOccupancy) {
 		bufMgr->unPinPage(file, leftPageId, false);
 		throw NonLeafNodeNotFullException();
 	}
@@ -249,13 +252,13 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 		
 	// Split keys in half
 	// Put all keys, including the one to be inserted, into a new array
-	int oriKeyArray[INTARRAYNONLEAFSIZE + 1];
-	PageId oriPageNoArray[INTARRAYNONLEAFSIZE + 2];
+	int oriKeyArray[nodeOccupancy + 1];
+	PageId oriPageNoArray[nodeOccupancy + 2];
 	int idx = 0;
 	bool isAdded = false;
-	for(int i = 0; i < INTARRAYNONLEAFSIZE + 1; i++) {
+	for(int i = 0; i < nodeOccupancy + 1; i++) {
 		if(!isAdded) {
-			if(leftNode->keyArray[idx] < key  && idx < INTARRAYNONLEAFSIZE) {
+			if(leftNode->keyArray[idx] < key  && idx < nodeOccupancy) {
 				oriKeyArray[i] = leftNode->keyArray[idx];
 				oriPageNoArray[i] = leftNode->pageNoArray[idx];
 				idx++;
@@ -271,7 +274,7 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 			idx++;
 		}
 	}
-	const int halfSize = (INTARRAYNONLEAFSIZE + 1) / 2;
+	const int halfSize = (nodeOccupancy + 1) / 2;
 
 	// Fill the left node
 	for(int i = 0; i < halfSize; i++) {
@@ -281,12 +284,12 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 	leftNode->pageNoArray[halfSize] = oriPageNoArray[halfSize];
 	leftNode->length = halfSize;
 	// Fill the right node
-	for(int i = halfSize + 1; i < INTARRAYNONLEAFSIZE + 1; i++) {
+	for(int i = halfSize + 1; i < nodeOccupancy + 1; i++) {
 		rightNode->keyArray[i - halfSize - 1] = oriKeyArray[i];
 		rightNode->pageNoArray[i - halfSize - 1] = oriPageNoArray[i];
 	}
-	rightNode->pageNoArray[halfSize] = oriPageNoArray[INTARRAYNONLEAFSIZE + 1];
-	rightNode->length = INTARRAYNONLEAFSIZE - halfSize;
+	rightNode->pageNoArray[halfSize] = oriPageNoArray[nodeOccupancy + 1];
+	rightNode->length = nodeOccupancy - halfSize;
 
 	// Update numNonLeafNode
 	numNonLeafNode++;
@@ -315,7 +318,7 @@ void BTreeIndex::splitLeafNode(PageId pageId,
 	Page* leftLeafPage;
 	bufMgr->readPage(file, leftLeafPageId, leftLeafPage);
 	LeafNodeInt* leftLeafNode = reinterpret_cast<LeafNodeInt*>(leftLeafPage);
-	if(leftLeafNode->length != INTARRAYLEAFSIZE) {
+	if(leftLeafNode->length != leafOccupancy) {
 		bufMgr->unPinPage(file, leftLeafPageId, false);
 		throw LeafNodeNotFullException();
 	}
@@ -333,12 +336,12 @@ void BTreeIndex::splitLeafNode(PageId pageId,
 
 	// Split keys in half
 	// Put all keys, including the one to be inserted, into a new array
-	int oriKeyArray[INTARRAYLEAFSIZE + 1];
-	RecordId oriRidArray[INTARRAYLEAFSIZE + 1];
+	int oriKeyArray[leafOccupancy + 1];
+	RecordId oriRidArray[leafOccupancy + 1];
 	int idx = 0;
 	bool isAdded = false;
-	for(int i = 0; i < INTARRAYLEAFSIZE + 1; i++) {
-		if((isAdded || leftLeafNode->keyArray[idx] < ridkeypair.key) && idx < INTARRAYLEAFSIZE) {
+	for(int i = 0; i < leafOccupancy + 1; i++) {
+		if((isAdded || leftLeafNode->keyArray[idx] < ridkeypair.key) && idx < leafOccupancy) {
 			oriKeyArray[i] = leftLeafNode->keyArray[idx];
 			oriRidArray[i] = leftLeafNode->ridArray[idx];
 			idx++;
@@ -348,7 +351,7 @@ void BTreeIndex::splitLeafNode(PageId pageId,
 			isAdded = true;
 		}
 	}
-	const int halfSize = (INTARRAYLEAFSIZE + 1) / 2;
+	const int halfSize = (leafOccupancy + 1) / 2;
 	
 	// Fill the left node
 	for(int i = 0; i < halfSize; i++) {
@@ -357,11 +360,11 @@ void BTreeIndex::splitLeafNode(PageId pageId,
 	}
 	leftLeafNode->length = halfSize;
 	// Fill the right node
-	for(int i = halfSize; i < INTARRAYLEAFSIZE + 1; i++) {
+	for(int i = halfSize; i < leafOccupancy + 1; i++) {
 		rightLeafNode->keyArray[i - halfSize] = oriKeyArray[i];
 		rightLeafNode->ridArray[i - halfSize] = oriRidArray[i];
 	}
-	rightLeafNode->length = INTARRAYLEAFSIZE + 1 - halfSize;
+	rightLeafNode->length = leafOccupancy + 1 - halfSize;
 
 	// Update numLeafNode
 	numLeafNode++;
@@ -427,7 +430,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 	// Insert the rid
 	// Check if this node is full
-	if(node->length < INTARRAYLEAFSIZE) {
+	if(node->length < leafOccupancy) {
 		// This node is not full. Just insert to this node.
 		int insertIdx = 0;
 		while(insertIdx < node->length) {
@@ -475,7 +478,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				bufMgr->readPage(file, parentPageId, parentPage);
 				NonLeafNodeInt* parentNode = reinterpret_cast<NonLeafNodeInt*>(parentPage);
 				
-				if(parentNode->length < INTARRAYNONLEAFSIZE) {
+				if(parentNode->length < nodeOccupancy) {
 					// This node is not full. Just insert the new key.
 					int insertIdx = 0;
 					for(; insertIdx < parentNode->length; insertIdx++) {
