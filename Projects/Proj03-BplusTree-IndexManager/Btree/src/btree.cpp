@@ -54,8 +54,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	
 	if(File::exists(outIndexName)) {
 		// The index file exists, open it
-		BlobFile newFile = BlobFile::open(outIndexName); // potential bug: in stack?
-		file = &newFile;
+		file = new BlobFile(outIndexName, false);
 
 		Page* metaPage;
 		bufMgr->readPage(file, 1, metaPage); //TODO: not sure if meta data page id is always 1?
@@ -75,8 +74,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		bufMgr->unPinPage(file, 1, false);
 	} else {
 		// The index file does not exist, create a new one
-		BlobFile newFile = BlobFile::create(outIndexName);
-		file = &newFile;
+		file = new BlobFile(outIndexName, true);
 
 		// Create a meta data page on file
 		PageId metaPageId;
@@ -139,6 +137,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 BTreeIndex::~BTreeIndex()
 {
+	delete file;
 }
 
 // -----------------------------------------------------------------------------

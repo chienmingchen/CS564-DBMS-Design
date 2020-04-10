@@ -238,6 +238,15 @@ class BTreeIndex {
    */
 	int			nodeOccupancy;
 
+  /**
+   * Number of keys in non-leaf node, depending upon the type of key.
+   */
+	int			numNonLeafNode;
+   
+  /**
+   * Number of keys in non-leaf node, depending upon the type of key.
+   */
+	int			numLeafNode;
 
 	// MEMBERS SPECIFIC TO SCANNING
 
