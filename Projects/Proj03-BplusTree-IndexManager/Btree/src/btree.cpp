@@ -434,7 +434,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				break;
 			insertIdx++;
 		}
-		for(int i = node->length - 1; i > insertIdx; i--) {
+		for(int i = node->length; i > insertIdx; i--) {
 			node->keyArray[i] = node->keyArray[i-1];
 			node->ridArray[i] = node->ridArray[i-1];
 		}
