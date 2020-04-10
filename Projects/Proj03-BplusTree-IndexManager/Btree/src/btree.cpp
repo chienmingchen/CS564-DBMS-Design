@@ -408,6 +408,9 @@ void BTreeIndex::createNewRootNode(int newKey,
 	indexMetaInfo->rootPageNo = rootPageId;
 	bufMgr->unPinPage(file, headerPageNum, true);
 
+	// Update nodeOccupancy
+	nodeOccupancy++;
+
 	// Unpin the new root page
 	bufMgr->unPinPage(file, rootPageId, true);
 }
