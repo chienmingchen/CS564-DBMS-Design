@@ -254,7 +254,7 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 	bool isAdded = false;
 	for(int i = 0; i < INTARRAYNONLEAFSIZE + 1; i++) {
 		if(!isAdded) {
-			if(leftNode->keyArray[idx] < key) {
+			if(leftNode->keyArray[idx] < key  && idx < INTARRAYNONLEAFSIZE) {
 				oriKeyArray[i] = leftNode->keyArray[idx];
 				oriPageNoArray[i] = leftNode->pageNoArray[idx];
 				idx++;
@@ -478,7 +478,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					// This node is not full. Just insert the new key.
 					int insertIdx = 0;
 					for(; insertIdx < parentNode->length; insertIdx++) {
-						if(newKey >= parentNode->keyArray[insertIdx])
+						if(newKey < parentNode->keyArray[insertIdx])
 							break;
 					}
 					for(int i = parentNode->length - 1; i > insertIdx; i--) {
