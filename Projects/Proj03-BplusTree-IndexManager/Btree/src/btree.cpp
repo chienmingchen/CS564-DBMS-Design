@@ -575,6 +575,46 @@ const void BTreeIndex::printTree(const PageId pageId, bool isLeafNode)
 } 
 
 // -----------------------------------------------------------------------------
+// BTreeIndex::printLeafNodesBySibLink
+// -----------------------------------------------------------------------------
+const void BTreeIndex::printLeafNodesBySibLink()
+{
+	// Find leftest leaf node
+	Page* page;
+	PageId pageId = rootPageNum;
+	
+	if(nodeOccupancy > 0) {
+		while(true) {
+			bufMgr->readPage(file, pageId, page);
+			NonLeafNodeInt* tmpNode = reinterpret_cast<NonLeafNodeInt*>(page);
+			bufMgr->unPinPage(file, pageId, false);
+			pageId = tmpNode->pageNoArray[0];
+			if(tmpNode->level == 1)
+				break;
+		}
+	}
+	bufMgr->readPage(file, pageId, page);
+	LeafNodeInt* node = reinterpret_cast<LeafNodeInt*>(page);
+	
+	// Print pageId(node) by following the sib link
+	// TODO: use counting
+	std::cout << "Leaf nodes: ";
+	while(true) {
+		std::cout << pageId;
+		bufMgr->unPinPage(file, pageId, false);
+		pageId = node->rightSibPageNo;
+		if(pageId == 0)
+			break;
+		else
+			std::cout << " -> ";
+		
+		bufMgr->readPage(file, pageId, page);
+		node = reinterpret_cast<LeafNodeInt*>(page);
+	}
+	std::cout << std::endl;
+} 
+
+// -----------------------------------------------------------------------------
 // BTreeIndex::startScan
 // -----------------------------------------------------------------------------
 

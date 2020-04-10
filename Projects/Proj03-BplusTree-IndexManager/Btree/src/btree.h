@@ -418,6 +418,11 @@ class BTreeIndex {
 	**/
    const void printTree(const PageId pageId, bool isLeafNode);
 
+ /**
+	* Print leaf nodes of the Btree by following the right sib link. 
+	**/
+   const void printLeafNodesBySibLink();
+
   /**
 	 * Begin a filtered scan of the index.  For instance, if the method is called 
 	 * using ("a",GT,"d",LTE) then we should seek all entries with a value 
