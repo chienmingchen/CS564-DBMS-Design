@@ -178,14 +178,12 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 		// Root node is a non-leaf node
 		NonLeafNodeInt* node = reinterpret_cast<NonLeafNodeInt*>(page);
 		bool found;
-		PageId nextPageId;
-
-		bufMgr->unPinPage(file, rootPageNum, false);
+		PageId nextPageId = rootPageNum;
 
 		while(true) {
 			// Find next pageId
 			found = false;
-			for(int i = 0; i < INTARRAYNONLEAFSIZE; i++) {
+			for(int i = 0; i < node->length; i++) {
 				if(*key < node->keyArray[i]) { //TODO: may need to use custom operator
 					// Unpin the current page
 					bufMgr->unPinPage(file, nextPageId, false);
@@ -198,7 +196,7 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 				// Unpin the current page
 				bufMgr->unPinPage(file, nextPageId, false);
 				// Assign the next page id
-				nextPageId = node->pageNoArray[INTARRAYNONLEAFSIZE];
+				nextPageId = node->pageNoArray[node->length];
 			}
 			
 			// Get next node by nextPageId
