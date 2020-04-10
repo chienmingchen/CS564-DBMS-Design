@@ -287,7 +287,7 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 		rightNode->keyArray[i - halfSize - 1] = oriKeyArray[i];
 		rightNode->pageNoArray[i - halfSize - 1] = oriPageNoArray[i];
 	}
-	rightNode->pageNoArray[halfSize] = oriPageNoArray[nodeOccupancy + 1];
+	rightNode->pageNoArray[nodeOccupancy - halfSize] = oriPageNoArray[nodeOccupancy + 1];
 	rightNode->length = nodeOccupancy - halfSize;
 
 	// Update numNonLeafNode
