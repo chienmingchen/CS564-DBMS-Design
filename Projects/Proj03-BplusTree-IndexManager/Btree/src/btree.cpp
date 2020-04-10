@@ -190,6 +190,7 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 					// Assign the next page id
 					nextPageId = node->pageNoArray[i];
 					found = true;
+					break;
 				}
 			}
 			if(!found) {
@@ -266,7 +267,7 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 			}
 		} else {
 			oriKeyArray[i] = leftNode->keyArray[idx];
-			oriPageNoArray[i+1] = leftNode->pageNoArray[idx];
+			oriPageNoArray[i+1] = leftNode->pageNoArray[idx+1];
 			idx++;
 		}
 	}
@@ -280,12 +281,12 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 	leftNode->pageNoArray[halfSize] = oriPageNoArray[halfSize];
 	leftNode->length = halfSize;
 	// Fill the right node
-	for(int i = halfSize + 1; i < INTARRAYLEAFSIZE + 1; i++) {
+	for(int i = halfSize + 1; i < INTARRAYNONLEAFSIZE + 1; i++) {
 		rightNode->keyArray[i - halfSize - 1] = oriKeyArray[i];
 		rightNode->pageNoArray[i - halfSize - 1] = oriPageNoArray[i];
 	}
-	rightNode->pageNoArray[halfSize] = oriPageNoArray[INTARRAYLEAFSIZE + 1];
-	rightNode->length = INTARRAYLEAFSIZE - halfSize;
+	rightNode->pageNoArray[halfSize] = oriPageNoArray[INTARRAYNONLEAFSIZE + 1];
+	rightNode->length = INTARRAYNONLEAFSIZE - halfSize;
 
 	// Update nodeOccupancy
 	nodeOccupancy++;
@@ -481,7 +482,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						if(newKey < parentNode->keyArray[insertIdx])
 							break;
 					}
-					for(int i = parentNode->length - 1; i > insertIdx; i--) {
+					parentNode->pageNoArray[parentNode->length + 1] = parentNode->pageNoArray[parentNode->length];
+					for(int i = parentNode->length; i > insertIdx; i--) {
 						parentNode->keyArray[i] = parentNode->keyArray[i-1];
 						parentNode->pageNoArray[i] = parentNode->pageNoArray[i-1];
 					}
