@@ -56,7 +56,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 		Page* metaPage;
 		bufMgr->readPage(file, 1, metaPage); //TODO: not sure if meta data page id is always 1?
-		IndexMetaInfo* metaData = reinterpret_cast<IndexMetaInfo*>(&metaPage);
+		IndexMetaInfo* metaData = reinterpret_cast<IndexMetaInfo*>(metaPage);
 		
 		// Check if values in metapage(relationName, attribute byte offset and attribute type) 
 		// match with values received through constructor parameters.
@@ -170,14 +170,13 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 
 	if(nodeOccupancy == 0) {
 		// Root node is a leaf node
-		outNode = reinterpret_cast<LeafNodeInt*>(&page);
-		bufMgr->unPinPage(file, rootPageNum, false);
+		outNode = reinterpret_cast<LeafNodeInt*>(page);
 		return rootPageNum;
 	} else {
 		path.push_back(rootPageNum);
 
 		// Root node is a non-leaf node
-		NonLeafNodeInt* node = reinterpret_cast<NonLeafNodeInt*>(&page);
+		NonLeafNodeInt* node = reinterpret_cast<NonLeafNodeInt*>(page);
 		bool found;
 		PageId nextPageId;
 
@@ -407,7 +406,7 @@ void BTreeIndex::createNewRootNode(int newKey,
 	// Update header
 	Page* headerPage;
 	bufMgr->readPage(file, headerPageNum, headerPage);
-	struct IndexMetaInfo* indexMetaInfo = reinterpret_cast<struct IndexMetaInfo*>(&headerPage);
+	struct IndexMetaInfo* indexMetaInfo = reinterpret_cast<struct IndexMetaInfo*>(headerPage);
 	indexMetaInfo->rootPageNo = rootPageId;
 	bufMgr->unPinPage(file, headerPageNum, true);
 
