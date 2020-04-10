@@ -41,8 +41,8 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	this->attrByteOffset = attrByteOffset;
 	attributeType = attrType;
 
-	leafOccupancy = 0;
-	nodeOccupancy = 0;
+	numLeafNode = 0;
+	numNonLeafNode = 0;
 
 	// Construct index file name
 	std::ostringstream idxStr;
@@ -168,7 +168,7 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 	Page* page;
 	bufMgr->readPage(file, rootPageNum, page);
 
-	if(nodeOccupancy == 0) {
+	if(numNonLeafNode == 0) {
 		// Root node is a leaf node
 		outNode = reinterpret_cast<LeafNodeInt*>(page);
 		return rootPageNum;
@@ -288,8 +288,8 @@ void BTreeIndex::splitNonLeafNode(PageId pageId,
 	rightNode->pageNoArray[halfSize] = oriPageNoArray[INTARRAYNONLEAFSIZE + 1];
 	rightNode->length = INTARRAYNONLEAFSIZE - halfSize;
 
-	// Update nodeOccupancy
-	nodeOccupancy++;
+	// Update numNonLeafNode
+	numNonLeafNode++;
 
 	// Fill the return newKey, leftPageId and rightPageId
 	newKey = oriKeyArray[halfSize];
@@ -363,8 +363,8 @@ void BTreeIndex::splitLeafNode(PageId pageId,
 	}
 	rightLeafNode->length = INTARRAYLEAFSIZE + 1 - halfSize;
 
-	// Update leafOccupancy
-	leafOccupancy++;
+	// Update numLeafNode
+	numLeafNode++;
 
 	// Fill the return newKey, outLeftNodePageId and rightLeafPageId
 	newKey = oriKeyArray[halfSize];
@@ -407,8 +407,8 @@ void BTreeIndex::createNewRootNode(int newKey,
 	indexMetaInfo->rootPageNo = rootPageId;
 	bufMgr->unPinPage(file, headerPageNum, true);
 
-	// Update nodeOccupancy
-	nodeOccupancy++;
+	// Update numNonLeafNode
+	numNonLeafNode++;
 
 	// Unpin the new root page
 	bufMgr->unPinPage(file, rootPageId, true);
@@ -538,7 +538,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 // -----------------------------------------------------------------------------
 const void BTreeIndex::printTreeFromRoot()
 {
-	printTree(rootPageNum, nodeOccupancy == 0);
+	printTree(rootPageNum, numNonLeafNode == 0);
 } 
 
 // -----------------------------------------------------------------------------
@@ -583,7 +583,7 @@ const void BTreeIndex::printLeafNodesBySibLink()
 	Page* page;
 	PageId pageId = rootPageNum;
 	
-	if(nodeOccupancy > 0) {
+	if(numNonLeafNode > 0) {
 		while(true) {
 			bufMgr->readPage(file, pageId, page);
 			NonLeafNodeInt* tmpNode = reinterpret_cast<NonLeafNodeInt*>(page);
