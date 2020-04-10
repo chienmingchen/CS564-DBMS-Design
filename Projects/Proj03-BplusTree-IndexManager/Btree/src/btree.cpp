@@ -565,7 +565,7 @@ const void BTreeIndex::printTree(const PageId pageId, bool isLeafNode)
 		bool isChildrenLeaf = (node->level == 1);
 		printTree(node->pageNoArray[0], isChildrenLeaf);
 		for(int i = 0; i < node->length; i++) {
-			printTree(node->pageNoArray[i], isChildrenLeaf);
+			printTree(node->pageNoArray[i+1], isChildrenLeaf);
 		}
 	}
 	
