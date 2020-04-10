@@ -211,8 +211,6 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 			} else {
 				// Now node's level == 1, which means the next child node is the target leaf node
 				outNode = reinterpret_cast<LeafNodeInt*>(&page);
-				// Unpin the current page
-				bufMgr->unPinPage(file, nextPageId, false);
 				return nextPageId;
 			}
 		}
@@ -443,7 +441,13 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 		
 		// Update length
 		node->length++;
+
+		// Unpin the page
+		bufMgr->unPinPage(file, leafPageId, true);
 	} else {
+		// Unpin the page now. The leaf page would be read again inside function splitLeafNode.
+		bufMgr->unPinPage(file, leafPageId, false);
+
 		// This node is full. Need to split.
 		PageId leftPageId;
 		PageId rightPageId;
