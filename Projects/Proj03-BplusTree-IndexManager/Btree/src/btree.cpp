@@ -203,12 +203,12 @@ PageId BTreeIndex::searchEntry(int* key, LeafNodeInt*& outNode, std::vector<Page
 			bufMgr->readPage(file, nextPageId, page);
 			if(node->level == 0) {
 				// Next child node is a non-leaf node
-				node = reinterpret_cast<NonLeafNodeInt*>(&page);
+				node = reinterpret_cast<NonLeafNodeInt*>(page);
 				// Push this pageId to path
 				path.push_back(nextPageId);
 			} else {
 				// Now node's level == 1, which means the next child node is the target leaf node
-				outNode = reinterpret_cast<LeafNodeInt*>(&page);
+				outNode = reinterpret_cast<LeafNodeInt*>(page);
 				return nextPageId;
 			}
 		}
