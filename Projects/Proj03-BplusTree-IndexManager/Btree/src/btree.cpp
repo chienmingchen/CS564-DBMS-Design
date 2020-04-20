@@ -626,6 +626,58 @@ const void BTreeIndex::printLeafNodesBySibLink()
 } 
 
 // -----------------------------------------------------------------------------
+// BTreeIndex::postOrderTraversal
+// -----------------------------------------------------------------------------
+void BTreeIndex::postOrderTraversal(std::vector<std::vector<int>> &outPath, 
+									PageId pageId, 
+									int isLeaf)
+{
+	if(isLeaf == 1) {
+		Page* page;
+		bufMgr->readPage(file, pageId, page);
+		LeafNodeInt* tmpNode = reinterpret_cast<LeafNodeInt*>(page);
+		std::vector<int> node;
+		for(int i = 0; i < tmpNode->length; i++) {
+			node.push_back(tmpNode->keyArray[i]);
+		}
+
+		outPath.push_back(node);
+		bufMgr->unPinPage(file, pageId, false);
+		return;
+	}
+
+	Page* page;
+	bufMgr->readPage(file, pageId, page);
+	NonLeafNodeInt* tmpNode = reinterpret_cast<NonLeafNodeInt*>(page);
+	std::vector<int> node;
+	for(int i = 0; i < tmpNode->length; i++) {
+		node.push_back(tmpNode->keyArray[i]);
+	}
+	std::vector<PageId> children;
+	for(int i = 0; i < tmpNode->length + 1; i++) {
+		children.push_back(tmpNode->pageNoArray[i]);
+	}
+	isLeaf = (tmpNode->level == 1);
+	bufMgr->unPinPage(file, pageId, false);
+
+	for(unsigned int i = 0; i < children.size(); i++) {
+		postOrderTraversal(outPath, children[i], isLeaf);
+	}
+
+	outPath.push_back(node);
+}
+
+// -----------------------------------------------------------------------------
+// BTreeIndex::getTreePostOrder
+// -----------------------------------------------------------------------------
+const std::vector<std::vector<int>> BTreeIndex::getTreePostOrder()
+{
+	std::vector<std::vector<int>> ret;
+	postOrderTraversal(ret, rootPageNum, numNonLeafNode == 0);
+	return ret;
+}
+
+// -----------------------------------------------------------------------------
 // BTreeIndex::startScan
 // -----------------------------------------------------------------------------
 

@@ -42,7 +42,7 @@ using namespace badgerdb;
 int testNum = 1;
 const std::string relationName = "relA";
 //If the relation size is changed then the second parameter 2 chechPassFail may need to be changed to number of record that are expected to be found during the scan, else tests will erroneously be reported to have failed.
-const int	relationSize = 5000;
+int relationSize = 5000;
 std::string intIndexName, doubleIndexName, stringIndexName;
 
 // This is the structure for tuples in the base relation
@@ -70,6 +70,7 @@ void createRelationRandom();
 void intTests();
 int intScan(BTreeIndex *index, int lowVal, Operator lowOp, int highVal, Operator highOp);
 void indexTests();
+void test_tree();
 void test1();
 void test2();
 void test3();
@@ -137,7 +138,7 @@ int main(int argc, char **argv)
 
 	File::remove(relationName);
 
-	test1();
+	test_tree();
 	test2();
 	test3();
 	//errorTests();
@@ -176,6 +177,95 @@ void test3()
 	createRelationRandom();
 	indexTests();
 	deleteRelation();
+}
+
+void test_tree()
+{
+	std::cout << "---------------------" << std::endl;
+	std::cout << "Tree Structue Test" << std::endl;
+
+	int oriRelationSize = relationSize;
+	relationSize = 20;
+
+	{ // Forward case
+	
+		createRelationForward();
+		int order = 3;
+		BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER, order, order);
+
+		// Construct expected result
+		std::vector<std::vector<int>> expect = {
+			{0, 1},
+			{2, 3},
+			{4, 5},
+			{2, 4},
+			{6, 7},
+			{8, 9},
+			{10, 11},
+			{8, 10},
+			{12, 13},
+			{14, 15},
+			{16, 17},
+			{18, 19},
+			{14, 16, 18},
+			{6, 12}
+		};
+
+		// Get the actual result
+		std::vector<std::vector<int>> actual = index.getTreePostOrder();
+
+		// Compare expected result and actual result
+		if(expect != actual) {																								\
+			std::cout << "\nTest FAILS at line no:" << __LINE__;						\
+			std::cout << std::endl;		
+			exit(1);
+		}
+		
+		deleteRelation();
+	}
+
+	{ // Backward case
+		createRelationBackward();
+		int order = 3;
+		BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER, order, order);
+
+		// Construct expected result
+		std::vector<std::vector<int>> expect = {
+			{0, 1},
+			{2, 3},
+			{4, 5},
+			{6, 7},
+			{2, 4, 6},
+			{8, 9},
+			{10, 11},
+			{10},
+			{12, 13},
+			{14, 15},
+			{14},
+			{16, 17},
+			{18, 19},
+			{18},
+			{8, 12, 16}
+		};
+
+		// Get the actual result
+		std::vector<std::vector<int>> actual = index.getTreePostOrder();
+
+		// Compare expected result and actual result
+		if(expect != actual) {																					\
+			std::cout << "\nTest FAILS at line no:" << __LINE__;						\
+			std::cout << std::endl;		
+			exit(1);
+		}
+		
+		deleteRelation();
+	}
+
+	try{
+		File::remove(intIndexName);
+	} catch(FileNotFoundException e) {}
+
+	relationSize = oriRelationSize;
 }
 
 // -----------------------------------------------------------------------------
