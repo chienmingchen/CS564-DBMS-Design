@@ -392,7 +392,8 @@ class BTreeIndex {
    * @throws  BadIndexInfoException     If the index file already exists for the corresponding attribute, but values in metapage(relationName, attribute byte offset, attribute type etc.) do not match with values received through constructor parameters.
    */
 	BTreeIndex(const std::string & relationName, std::string & outIndexName,
-						BufMgr *bufMgrIn,	const int attrByteOffset,	const Datatype attrType);
+						BufMgr *bufMgrIn,	const int attrByteOffset,	const Datatype attrType,
+                  int orderNonLeaf = INTARRAYNONLEAFSIZE, int orderLeaf = INTARRAYLEAFSIZE);
 	
 
   /**

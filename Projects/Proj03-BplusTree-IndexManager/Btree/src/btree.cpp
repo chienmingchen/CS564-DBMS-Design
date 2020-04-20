@@ -37,14 +37,16 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		std::string & outIndexName,
 		BufMgr *bufMgrIn,
 		const int attrByteOffset,
-		const Datatype attrType)
+		const Datatype attrType,
+		int orderNonLeaf /*=INTARRAYLEAFSIZE*/,
+		int orderLeaf /*=INTARRAYLEAFSIZE*/)
 {
 	bufMgr = bufMgrIn;
 	this->attrByteOffset = attrByteOffset;
 	attributeType = attrType;
 
-	nodeOccupancy = INTARRAYNONLEAFSIZE;
-	leafOccupancy = INTARRAYLEAFSIZE;
+	nodeOccupancy = orderNonLeaf;
+	leafOccupancy = orderLeaf;
 
 	numLeafNode = 0;
 	numNonLeafNode = 0;
