@@ -560,7 +560,8 @@ const void BTreeIndex::printTree(const PageId pageId, bool isLeafNode)
 	if(isLeafNode) {
 		LeafNodeInt* node = reinterpret_cast<LeafNodeInt*>(page);
 		for(int i = 0; i < node->length; i++) {
-			std::cout << node->keyArray[i] << "/ \\";
+			//std::cout << node->keyArray[i] << "/ \\";
+			std::cout << node->keyArray[i] << ":" << node->ridArray[i].page_number <<  "/ \\";
 		}
 		std::cout << std::endl;
 	} else {
@@ -630,7 +631,8 @@ const void BTreeIndex::startScan(const void* lowValParm,
 				   const void* highValParm,
 				   const Operator highOpParm)
 {
-  	//check if the operators are valid
+	
+	//check if the operators are valid
   	if((lowOpParm != GT && lowOpParm != GTE) || (highOpParm != LT && highOpParm != LTE))
 		throw BadOpcodesException();
   	else{
@@ -662,26 +664,24 @@ const void BTreeIndex::startScan(const void* lowValParm,
   	std::vector<PageId> path;
   	currentPageNum = searchEntry(&lowValInt, node, path);
 	bufMgr->readPage(file, currentPageNum, currentPageData);
-	bufMgr->unPinPage(file, currentPageNum, false);
+	//unpin by endscan
+	//bufMgr->unPinPage(file, currentPageNum, false);
 
 	//std::cout << "!!! scan from page : "<< currentPageNum <<std::endl;
   	//traverse the page to locate the first RecordID 
-  	int *entryIdx = std::lower_bound(node->keyArray, node->keyArray + node->length-1, lowValInt);
+  	int entryIdx = std::lower_bound(node->keyArray, node->keyArray + node->length-1, lowValInt) - (node->keyArray);
+       
+        //! if search an empty index table is a case needed to consider
 
-	//???
-        //what if search an empty index table
-
-	if( entryIdx == node->keyArray + node->length){
+	if( entryIdx == node->length){
 		//cannot find the entry in the expected node
 		throw NoSuchKeyFoundException();
   	}
 	//std::cout << "!!! record is at : "<< *entryIdx <<std::endl;
 	
-	//printTree(currentPageNum, 1);
-
   	//the case that the entry is the last record and lowOp is GT
   	//the entry will be in the next node
-  	if((entryIdx == (node->keyArray + node->length) || (node->length == INTARRAYLEAFSIZE))  && lowOp == GT){
+  	if((entryIdx == node->length || (node->length == INTARRAYLEAFSIZE))  && lowOp == GT){
   		bufMgr->unPinPage(file, currentPageNum, false);
     		currentPageNum = node->rightSibPageNo;
     		bufMgr->readPage(file, currentPageNum, currentPageData);
@@ -692,19 +692,20 @@ const void BTreeIndex::startScan(const void* lowValParm,
 		int curKey = node->keyArray[nextEntry];
 		if(curKey > highValInt || (curKey == highValInt && highOp == LT)) {
     			
-	    		std::cout << "!!! recover exceed higher bound" <<std::endl;
+	    		std::cout << "!!! exceed the higher bound" <<std::endl;
 			endScan();
     			throw NoSuchKeyFoundException();
    	 	}
   	}
   	else{
-		if(lowOp == GT && lowValInt == node->keyArray[*entryIdx])
-		nextEntry = (*entryIdx)+1;
+		if(lowOp == GT && lowValInt == node->keyArray[entryIdx])
+		nextEntry = entryIdx+1;
 		else
-		nextEntry = (*entryIdx);
+		nextEntry = entryIdx;
   	}
 
-  	//Now the entry has been located
+	                                                                                
+	//Now the entry has been located
   	RecordId outRid = node->ridArray[nextEntry];
 
   	//Check if the record is valid
@@ -713,7 +714,6 @@ const void BTreeIndex::startScan(const void* lowValParm,
 	        std::cout << "!!! weird record data" <<std::endl;
     		throw NoSuchKeyFoundException();
   	}
-	//std::cout << "!!! startScan finish" << std::endl;
 
 }
   
