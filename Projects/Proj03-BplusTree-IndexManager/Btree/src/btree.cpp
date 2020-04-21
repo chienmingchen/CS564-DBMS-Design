@@ -140,6 +140,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 BTreeIndex::~BTreeIndex()
 {
+	bufMgr->flushFile(file);
 	delete file;
 }
 
@@ -663,6 +664,7 @@ const void BTreeIndex::startScan(const void* lowValParm,
   	LeafNodeInt* node;
   	std::vector<PageId> path;
   	currentPageNum = searchEntry(&lowValInt, node, path);
+	bufMgr->unPinPage(file, currentPageNum, false); // searchEntry doesn't unpin currentPageNum
 	bufMgr->readPage(file, currentPageNum, currentPageData);
 	//unpin by endscan
 	//bufMgr->unPinPage(file, currentPageNum, false);
