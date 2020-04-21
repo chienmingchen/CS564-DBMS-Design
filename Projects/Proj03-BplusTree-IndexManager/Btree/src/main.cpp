@@ -224,6 +224,9 @@ void test_tree()
 		
 		deleteRelation();
 	}
+	try{
+		File::remove(intIndexName);
+	} catch(FileNotFoundException e) {}
 
 	{ // Backward case
 		createRelationBackward();
@@ -261,7 +264,6 @@ void test_tree()
 		
 		deleteRelation();
 	}
-
 	try{
 		File::remove(intIndexName);
 	} catch(FileNotFoundException e) {}
