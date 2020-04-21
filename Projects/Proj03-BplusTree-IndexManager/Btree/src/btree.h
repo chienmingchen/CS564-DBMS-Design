@@ -376,6 +376,14 @@ class BTreeIndex {
                            PageId leftPageId, 
                            PageId rightPageId,
                            int level);
+   
+   /**
+	* Traverse the tree in post-order.
+   * @param outPath		         Reference to the traversal path
+   * @param pageId   		      Current node
+   * @param isLeaf               If this node is a leaf node
+	**/
+   void postOrderTraversal(std::vector<std::vector<int>> &outPath, PageId pageId, int isLeaf);
 
  public:
 
@@ -392,7 +400,8 @@ class BTreeIndex {
    * @throws  BadIndexInfoException     If the index file already exists for the corresponding attribute, but values in metapage(relationName, attribute byte offset, attribute type etc.) do not match with values received through constructor parameters.
    */
 	BTreeIndex(const std::string & relationName, std::string & outIndexName,
-						BufMgr *bufMgrIn,	const int attrByteOffset,	const Datatype attrType);
+						BufMgr *bufMgrIn,	const int attrByteOffset,	const Datatype attrType,
+                  int orderNonLeaf = INTARRAYNONLEAFSIZE, int orderLeaf = INTARRAYLEAFSIZE);
 	
 
   /**
@@ -431,6 +440,18 @@ class BTreeIndex {
 	* Print leaf nodes of the Btree by following the right sib link. 
 	**/
    const void printLeafNodesBySibLink();
+
+   /**
+	* Return the tree nodes in post-order
+   * For example, consider the tree below.
+   *                         7
+   *                      /    \
+   *                  3, 5        9
+   *                /   |  \     |  \
+   *              1,2  3,4 5,6  7,8  9,10
+   * The return value is [[1,2], [3,4], [5,6], [3,5], [7,8], [9], [7]]
+	**/
+   const std::vector<std::vector<int>> getTreePostOrder();
 
   /**
 	 * Begin a filtered scan of the index.  For instance, if the method is called 
