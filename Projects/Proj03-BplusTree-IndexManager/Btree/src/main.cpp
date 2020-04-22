@@ -68,6 +68,7 @@ void createRelationForward();
 void createRelationBackward();
 void createRelationRandom();
 void intTests();
+void errorCases();
 int intScan(BTreeIndex *index, int lowVal, Operator lowOp, int highVal, Operator highOp);
 void indexTests();
 void test_tree();
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
 	test1();
 	test2();
 	test3();
-	//errorTests();
+	errorTests();
 
   return 1;
 }
@@ -458,17 +459,21 @@ void indexTests()
 
 void intTests()
 {
+
   std::cout << "Create a B+ Tree index on the integer field" << std::endl;
   BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER);
 
 	// run some tests
-	checkPassFail(intScan(&index,25,GT,40,LT), 14)
+	
+	//checkPassFail(intScan(&index,25,GT,40,LT), 14)
+	
 	checkPassFail(intScan(&index,20,GTE,35,LTE), 16)
 	checkPassFail(intScan(&index,-3,GT,3,LT), 3)
 	checkPassFail(intScan(&index,996,GT,1001,LT), 4)
 	checkPassFail(intScan(&index,0,GT,1,LT), 0)
 	checkPassFail(intScan(&index,300,GT,400,LT), 99)
 	checkPassFail(intScan(&index,3000,GTE,4000,LT), 1000)
+	
 }
 
 int intScan(BTreeIndex * index, int lowVal, Operator lowOp, int highVal, Operator highOp)
@@ -550,20 +555,20 @@ void errorTests()
 	{
 	}
 
-  file1 = new PageFile(relationName, true);
+        file1 = new PageFile(relationName, true);
 	
-  // initialize all of record1.s to keep purify happy
-  memset(record1.s, ' ', sizeof(record1.s));
+        // initialize all of record1.s to keep purify happy
+        memset(record1.s, ' ', sizeof(record1.s));
 	PageId new_page_number;
-  Page new_page = file1->allocatePage(new_page_number);
+        Page new_page = file1->allocatePage(new_page_number);
 
-  // Insert a bunch of tuples into the relation.
-	for(int i = 0; i <10; i++ ) 
+        // Insert a bunch of tuples into the relation.
+	for(int i = 0; i <relationSize; i++ ) 
 	{
-    sprintf(record1.s, "%05d string record", i);
-    record1.i = i;
-    record1.d = (double)i;
-    std::string new_data(reinterpret_cast<char*>(&record1), sizeof(record1));
+            sprintf(record1.s, "%05d string record", i);
+            record1.i = i;
+            record1.d = (double)i;
+            std::string new_data(reinterpret_cast<char*>(&record1), sizeof(record1));
 
 		while(1)
 		{
@@ -578,16 +583,34 @@ void errorTests()
   			new_page = file1->allocatePage(new_page_number);
 			}
 		}
-  }
+        }  
 
 	file1->writePage(new_page_number, new_page);
 
-  BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER);
+	//intTests();
+        errorCases();
+	try
+	{
+		File::remove(intIndexName);
+	}
+	catch(FileNotFoundException e)
+	{
+	}
+        
+	deleteRelation();
 	
+	
+}
+
+void errorCases()
+{
+	
+	BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER);
+	 
 	int int2 = 2;
 	int int5 = 5;
-
-	// Scan Tests
+	
+	 // Scan Tests
 	std::cout << "Call endScan before startScan" << std::endl;
 	try
 	{
@@ -598,7 +621,6 @@ void errorTests()
 	{
 		std::cout << "ScanNotInitialized Test 1 Passed." << std::endl;
 	}
-	
 	std::cout << "Call scanNext before startScan" << std::endl;
 	try
 	{
@@ -644,8 +666,6 @@ void errorTests()
 	{
 		std::cout << "BadScanrangeException Test 1 Passed." << std::endl;
 	}
-
-	deleteRelation();
 }
 
 void deleteRelation()
@@ -662,5 +682,6 @@ void deleteRelation()
 	}
 	catch(FileNotFoundException e)
 	{
+		std::cout << "remove " << relationName  << "failed" << std::endl;
 	}
 }
