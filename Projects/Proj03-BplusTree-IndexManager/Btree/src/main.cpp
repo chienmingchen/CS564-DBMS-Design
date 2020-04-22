@@ -75,6 +75,15 @@ void test_tree();
 void test1();
 void test2();
 void test3();
+void test4();
+void test5();
+void test6();
+void test7();
+void test8();
+void test9();
+void test10();
+void test11();
+void test12();
 void errorTests();
 void deleteRelation();
 
@@ -143,6 +152,15 @@ int main(int argc, char **argv)
 	test1();
 	test2();
 	test3();
+	test4();
+	test5();
+	test6();
+	test7();
+	test8();
+	test9();
+	test10();
+	test11();
+	test12();
 	errorTests();
 
   return 1;
@@ -179,6 +197,123 @@ void test3()
 	createRelationRandom();
 	indexTests();
 	deleteRelation();
+}
+
+void test4()
+{
+	// Create a relation with tuples valued 0 to 100 in normal order and perform index tests
+	// on attributes of int type
+	std::cout << "------------------------------------------------" << std::endl;
+	std::cout << "Test 4 relationSize 10000: createRelationForward" << std::endl;
+	relationSize = 10000;
+	createRelationForward();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 4 relationSize 10000: createRelationForward Passed" << std::endl;
+}
+
+void test5()
+{
+	// Create a relation with tuples valued 0 to 100 in reverse order and perform index tests
+	// on attributes of int type
+	std::cout << "-------------------------------------------------" << std::endl;
+	std::cout << "Test 5 relationSize 10000: createRelationBackward" << std::endl;
+	relationSize = 10000;
+	createRelationBackward();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 5 relationSize 10000: createRelationBackward Passed" << std::endl;
+}
+
+void test6()
+{
+	// Create a relation with tuples valued 0 to 100 in random order and perform index tests
+	// on attributes of int type
+	std::cout << "-----------------------------------------------" << std::endl;
+	std::cout << "Test 6 relationSize 10000: createRelationRandom" << std::endl;
+	relationSize = 10000;
+	createRelationRandom();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 6 relationSize 10000: createRelationRandom Passed" << std::endl;
+}
+
+void test7()
+{
+	// Create a relation with tuples valued 0 to 50000 in normal order and perform index tests
+	// on attributes of int type
+	std::cout << "------------------------------------------------" << std::endl;
+	std::cout << "Test 7 relationSize 50000: createRelationForward" << std::endl;
+	relationSize = 50000;
+	createRelationForward();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 7 relationSize 50000: createRelationForward Passed" << std::endl;
+}
+
+void test8()
+{
+	// Create a relation with tuples valued 0 to 50000 in reverse order and perform index tests
+	// on attributes of int type
+	std::cout << "-------------------------------------------------" << std::endl;
+	std::cout << "Test 8 relationSize 50000: createRelationBackward" << std::endl;
+	relationSize = 50000;
+	createRelationBackward();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 8 relationSize 50000: createRelationBackward Passed" << std::endl;
+}
+
+void test9()
+{
+	// Create a relation with tuples valued 0 to 50000 in random order and perform index tests
+	// on attributes of int type
+	std::cout << "-----------------------------------------------" << std::endl;
+	std::cout << "Test 9 relationSize 50000: createRelationRandom" << std::endl;
+	relationSize = 50000;
+	createRelationRandom();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 9 relationSize 50000: createRelationRandom Passed" << std::endl;
+}
+
+void test10()
+{
+	// Create a relation with tuples valued 0 to 100000 in normal order and perform index tests
+	// on attributes of int type
+	std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "Test 10 relationSize 100000: createRelationForward" << std::endl;
+	relationSize = 100000;
+	createRelationForward();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 10 relationSize 100000: createRelationForward Passed" << std::endl;
+}
+
+void test11()
+{
+	// Create a relation with tuples valued 0 to 100000 in reverse order and perform index tests
+	// on attributes of int type
+	std::cout << "---------------------------------------------------" << std::endl;
+	std::cout << "Test 11 relationSize 100000: createRelationBackward" << std::endl;
+	relationSize = 100000;
+	createRelationBackward();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 11 relationSize 100000: createRelationBackward Passed" << std::endl;
+}
+
+void test12()
+{
+	// Create a relation with tuples valued 0 to 100000 in random order and perform index tests
+	// on attributes of int type
+	std::cout << "-------------------------------------------------" << std::endl;
+	std::cout << "Test 12 relationSize 100000: createRelationRandom" << std::endl;
+	relationSize = 100000;
+	createRelationRandom();
+	indexTests();
+	deleteRelation();
+	std::cout << "Test 12 relationSize 100000: createRelationRandom Passed" << std::endl;
 }
 
 void test_tree()
