@@ -6,6 +6,9 @@ CFLAGS = -std=c++14 -Wall -g
 OBJ = src/obj
 LIB = src/lib
 
+$(mkdir -p src/obj/exceptions)
+$(mkdir src/lib)
+
 RHEL_VER := $(shell uname -r | grep -o -E '(el5|el6)')
 ifeq ($(RHEL_VER), el5)
   PATH     := /s/gcc-4.6.1/bin:$(PATH)
