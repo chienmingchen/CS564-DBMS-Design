@@ -678,7 +678,7 @@ int intScan(BTreeIndex * index, int lowVal, Operator lowOp, int highVal, Operato
 
 void errorTests()
 {
-	std::cout << "Error handling tests" << std::endl;
+	std::cout << "\nError handling tests" << std::endl;
 	std::cout << "--------------------" << std::endl;
 	// Given error test
 
@@ -746,63 +746,90 @@ void errorCases()
 	int int5 = 5;
 	
 	 // Scan Tests
-	std::cout << "Call endScan before startScan" << std::endl;
+	std::cout << "Case 1: Call endScan before startScan" << std::endl;
 	try
 	{
 		index.endScan();
-		std::cout << "ScanNotInitialized Test 1 Failed." << std::endl;
+		std::cout << "ScanNotInitialized Test Failed." << std::endl;
 	}
 	catch(ScanNotInitializedException e)
 	{
-		std::cout << "ScanNotInitialized Test 1 Passed." << std::endl;
+		std::cout << "ScanNotInitialized Test Passed." << std::endl;
 	}
-	std::cout << "Call scanNext before startScan" << std::endl;
+	std::cout << "\nCase 2: Call scanNext before startScan" << std::endl;
 	try
 	{
 		RecordId foo;
 		index.scanNext(foo);
-		std::cout << "ScanNotInitialized Test 2 Failed." << std::endl;
+		std::cout << "ScanNotInitialized Test Failed." << std::endl;
 	}
 	catch(ScanNotInitializedException e)
 	{
-		std::cout << "ScanNotInitialized Test 2 Passed." << std::endl;
+		std::cout << "ScanNotInitialized Test Passed." << std::endl;
 	}
 	
-	std::cout << "Scan with bad lowOp" << std::endl;
+	std::cout << "\nCase 3: Scan with bad lowOp" << std::endl;
 	try
 	{
   	index.startScan(&int2, LTE, &int5, LTE);
-		std::cout << "BadOpcodesException Test 1 Failed." << std::endl;
+		std::cout << "BadOpcodesException Test Failed." << std::endl;
 	}
 	catch(BadOpcodesException e)
 	{
-		std::cout << "BadOpcodesException Test 1 Passed." << std::endl;
+		std::cout << "BadOpcodesException Test Passed." << std::endl;
 	}
 	
-	std::cout << "Scan with bad highOp" << std::endl;
+	std::cout << "\nCase 4: Scan with bad highOp" << std::endl;
 	try
 	{
   	index.startScan(&int2, GTE, &int5, GTE);
-		std::cout << "BadOpcodesException Test 2 Failed." << std::endl;
+		std::cout << "BadOpcodesException Test Failed." << std::endl;
 	}
 	catch(BadOpcodesException e)
 	{
-		std::cout << "BadOpcodesException Test 2 Passed." << std::endl;
+		std::cout << "BadOpcodesException Test Passed." << std::endl;
 	}
 
 
-	std::cout << "Scan with bad range" << std::endl;
+	std::cout << "\nCase 5: Scan with bad range" << std::endl;
 	try
 	{
   	index.startScan(&int5, GTE, &int2, LTE);
-		std::cout << "BadScanrangeException Test 1 Failed." << std::endl;
+		std::cout << "BadScanrangeException Test Failed." << std::endl;
 	}
 	catch(BadScanrangeException e)
 	{
-		std::cout << "BadScanrangeException Test 1 Passed." << std::endl;
+		std::cout << "BadScanrangeException Test Passed." << std::endl;
 	}
-}
 
+	std::cout << "\nCase6: starScan twice, then endScan twice" << std::endl;
+	try
+	{
+	index.startScan(&int2, GTE, &int5, LTE);
+	index.endScan();
+	index.endScan();
+	     std::cout << "ScanNotInitialized Test Failed." << std::endl;
+	}
+	catch(ScanNotInitializedException e)
+	{
+	     std::cout << "ScanNotInitialized Test Passed." << std::endl;
+	}
+
+	std::cout << "\nCase7: scanNext after endScan" << std::endl;
+	try
+	{
+	     RecordId foo;
+	     index.startScan(&int2, GTE, &int5, LTE);
+	     index.endScan();
+	     index.scanNext(foo);
+	     std::cout << "ScanNotInitialized Test Failed." << std::endl;
+	}
+	catch(ScanNotInitializedException e)
+        {		
+	     std::cout << "ScanNotInitialized Test Passed." << std::endl;
+        }
+        
+}
 void deleteRelation()
 {
 	if(file1)

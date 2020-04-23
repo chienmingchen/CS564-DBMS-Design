@@ -142,6 +142,9 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 BTreeIndex::~BTreeIndex()
 {
+	//in case the program ends without calling endScan
+	if (scanExecuting) 
+	  endScan();
 	bufMgr->flushFile(file);
 	delete file;
 }
@@ -705,11 +708,13 @@ const void BTreeIndex::startScan(const void* lowValParm,
   	if (scanExecuting)
 	{
 		//std::cout << "!!! scanExecuting is already on" << std::endl;	
-    		endScan();
+		//just ends here, should not affect the current scan
+		return;
 	}
   	else
+	{
     		scanExecuting = true;
-
+	}
   	//Set up all the variables for scan. 
   	//Start from root to find out the leaf page that contains the first RecordID 
   	currentPageNum = rootPageNum;
