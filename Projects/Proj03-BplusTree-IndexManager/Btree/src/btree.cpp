@@ -690,6 +690,14 @@ const void BTreeIndex::startScan(const void* lowValParm,
 				   const Operator highOpParm)
 {
 	
+  	//If another scan is already executing, that needs to be ended here.
+  	if (scanExecuting)	
+	{
+	   //std::cout << "!!! scanExecuting is already on" << std::endl;	
+	   //just ends here, should not affect the current scan
+	   return;
+	}
+	
 	//check if the operators are valid
   	if((lowOpParm != GT && lowOpParm != GTE) || (highOpParm != LT && highOpParm != LTE))
 		throw BadOpcodesException();
@@ -702,20 +710,11 @@ const void BTreeIndex::startScan(const void* lowValParm,
   	lowValInt = *((int *)lowValParm);
   	highValInt = *((int *)highValParm);
   	if (lowValInt > highValInt) 
-		throw BadScanrangeException();
-
-  	//If another scan is already executing, that needs to be ended here.
-  	if (scanExecuting)
-	{
-		//std::cout << "!!! scanExecuting is already on" << std::endl;	
-		//just ends here, should not affect the current scan
-		return;
-	}
+	    throw BadScanrangeException();
   	else
-	{
-    		scanExecuting = true;
-	}
-  	//Set up all the variables for scan. 
+    	    scanExecuting = true;
+
+	//Set up all the variables for scan. 
   	//Start from root to find out the leaf page that contains the first RecordID 
   	currentPageNum = rootPageNum;
 
