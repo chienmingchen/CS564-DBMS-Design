@@ -629,6 +629,49 @@ const void BTreeIndex::printLeafNodesBySibLink()
 } 
 
 // -----------------------------------------------------------------------------
+// BTreeIndex::preOrderTraversal
+// -----------------------------------------------------------------------------
+void BTreeIndex::preOrderTraversal(std::vector<std::vector<int>> &outPath, 
+									PageId pageId, 
+									int isLeaf)
+{
+	if(isLeaf == 1) {
+		Page* page;
+		bufMgr->readPage(file, pageId, page);
+		LeafNodeInt* tmpNode = reinterpret_cast<LeafNodeInt*>(page);
+		std::vector<int> node;
+		for(int i = 0; i < tmpNode->length; i++) {
+			node.push_back(tmpNode->keyArray[i]);
+		}
+
+		outPath.push_back(node);
+		bufMgr->unPinPage(file, pageId, false);
+		return;
+	}
+
+	Page* page;
+	bufMgr->readPage(file, pageId, page);
+	NonLeafNodeInt* tmpNode = reinterpret_cast<NonLeafNodeInt*>(page);
+	std::vector<int> node;
+	for(int i = 0; i < tmpNode->length; i++) {
+		node.push_back(tmpNode->keyArray[i]);
+	}
+	outPath.push_back(node);
+
+	std::vector<PageId> children;
+	for(int i = 0; i < tmpNode->length + 1; i++) {
+		children.push_back(tmpNode->pageNoArray[i]);
+	}
+	isLeaf = (tmpNode->level == 1);
+	bufMgr->unPinPage(file, pageId, false);
+
+	for(unsigned int i = 0; i < children.size(); i++) {
+		preOrderTraversal(outPath, children[i], isLeaf);
+	}
+
+}
+
+// -----------------------------------------------------------------------------
 // BTreeIndex::postOrderTraversal
 // -----------------------------------------------------------------------------
 void BTreeIndex::postOrderTraversal(std::vector<std::vector<int>> &outPath, 
@@ -668,6 +711,16 @@ void BTreeIndex::postOrderTraversal(std::vector<std::vector<int>> &outPath,
 	}
 
 	outPath.push_back(node);
+}
+
+// -----------------------------------------------------------------------------
+// BTreeIndex::getTreePreOrder
+// -----------------------------------------------------------------------------
+const std::vector<std::vector<int>> BTreeIndex::getTreePreOrder()
+{
+	std::vector<std::vector<int>> ret;
+	preOrderTraversal(ret, rootPageNum, numNonLeafNode == 0);
+	return ret;
 }
 
 // -----------------------------------------------------------------------------

@@ -251,14 +251,43 @@ void test_tree()
 	{
 	}
 
+	// Using both pre-order traversal and post-order traversal contributes to a unique tree
 	{ // Forward case
 	
 		createRelationForward();
 		int order = 3;
 		BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER, order, order);
 
-		// Construct expected result
-		std::vector<std::vector<int>> expect = {
+		// Construct expected result for pre order
+		std::vector<std::vector<int>> expectPreOrder = {
+			{6, 12},
+			{2, 4},
+			{0, 1},
+			{2, 3},
+			{4, 5},
+			{8, 10},
+			{6, 7},
+			{8, 9},
+			{10, 11},
+			{14, 16, 18},
+			{12, 13},
+			{14, 15},
+			{16, 17},
+			{18, 19}
+		};
+
+		// Get the actual result for pre order
+		std::vector<std::vector<int>> actualPreOrder = index.getTreePreOrder();
+
+		// Compare expected result and actual result
+		if(expectPreOrder != actualPreOrder) {																								\
+			std::cout << "\nTest FAILS at line no:" << __LINE__;						\
+			std::cout << std::endl;		
+			exit(1);
+		}
+
+		// Construct expected result for post order
+		std::vector<std::vector<int>> expectPostOrder = {
 			{0, 1},
 			{2, 3},
 			{4, 5},
@@ -275,11 +304,11 @@ void test_tree()
 			{6, 12}
 		};
 
-		// Get the actual result
-		std::vector<std::vector<int>> actual = index.getTreePostOrder();
+		// Get the actual result for post order
+		std::vector<std::vector<int>> actualPostOrder = index.getTreePostOrder();
 
 		// Compare expected result and actual result
-		if(expect != actual) {																								\
+		if(expectPostOrder != actualPostOrder) {																								\
 			std::cout << "\nTest FAILS at line no:" << __LINE__;						\
 			std::cout << std::endl;		
 			exit(1);
@@ -296,8 +325,37 @@ void test_tree()
 		int order = 3;
 		BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER, order, order);
 
-		// Construct expected result
-		std::vector<std::vector<int>> expect = {
+		// Construct expected result for pre order
+		std::vector<std::vector<int>> expectPreOrder = {
+			{8, 12, 16},
+			{2, 4, 6},
+			{0, 1},
+			{2, 3},
+			{4, 5},
+			{6, 7},
+			{10},
+			{8, 9},
+			{10, 11},
+			{14},
+			{12, 13},
+			{14, 15},
+			{18},
+			{16, 17},
+			{18, 19}
+		};
+
+		// Get the actual result for pre order
+		std::vector<std::vector<int>> actualPreOrder = index.getTreePreOrder();
+
+		// Compare expected result and actual result
+		if(expectPreOrder != actualPreOrder) {																								\
+			std::cout << "\nTest FAILS at line no:" << __LINE__;						\
+			std::cout << std::endl;		
+			exit(1);
+		}
+
+		// Construct expected result for post order
+		std::vector<std::vector<int>> expectPostOrder = {
 			{0, 1},
 			{2, 3},
 			{4, 5},
@@ -315,11 +373,11 @@ void test_tree()
 			{8, 12, 16}
 		};
 
-		// Get the actual result
-		std::vector<std::vector<int>> actual = index.getTreePostOrder();
+		// Get the actual result for post order
+		std::vector<std::vector<int>> actualPostOrder = index.getTreePostOrder();
 
 		// Compare expected result and actual result
-		if(expect != actual) {																					\
+		if(expectPostOrder != actualPostOrder) {																					\
 			std::cout << "\nTest FAILS at line no:" << __LINE__;						\
 			std::cout << std::endl;		
 			exit(1);
