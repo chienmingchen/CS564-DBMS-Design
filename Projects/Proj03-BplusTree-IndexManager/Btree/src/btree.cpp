@@ -780,21 +780,23 @@ const void BTreeIndex::startScan(const void* lowValParm,
 	//unpin by endscan
 	//bufMgr->unPinPage(file, currentPageNum, false);
 
-	//std::cout << "!!! scan from page : "<< currentPageNum <<std::endl;
   	//traverse the page to locate the first RecordID 
-  	int entryIdx = std::lower_bound(node->keyArray, node->keyArray + node->length-1, lowValInt) - (node->keyArray);
+  	int entryIdx = std::lower_bound(node->keyArray, node->keyArray + node->length-1, lowValInt) - (node->keyArray);  
        
-        //! if search an empty index table is a case needed to consider
-
-	if( entryIdx == node->length){
+	
+	//normal case that entryIdx is >= lowValInt
+	//but the exception is the end of key array
+	if(node->keyArray[entryIdx] < lowValInt){
 		//cannot find the entry in the expected node
 		throw NoSuchKeyFoundException();
   	}
-	//std::cout << "!!! record is at : "<< *entryIdx <<std::endl;
+        //handle the case that the found entry is bigger than the highVal
+	if(node->keyArray[entryIdx] > highValInt || (node->keyArray[entryIdx] == highValInt && highOp == LT))
+		throw NoSuchKeyFoundException();
 	
   	//the case that the entry is the last record and lowOp is GT
   	//the entry will be in the next node
-  	if((entryIdx == node->length || (node->length == INTARRAYLEAFSIZE))  && lowOp == GT){
+	if(entryIdx == (node->length-1) && lowOp == GT){
   		bufMgr->unPinPage(file, currentPageNum, false);
     		currentPageNum = node->rightSibPageNo;
     		bufMgr->readPage(file, currentPageNum, currentPageData);
@@ -824,7 +826,7 @@ const void BTreeIndex::startScan(const void* lowValParm,
   	//Check if the record is valid
   	if(outRid.page_number == 0 && outRid.slot_number == 0) {
     		endScan();
-	        std::cout << "!!! weird record data" <<std::endl;
+	        std::cout << "!!! invalid record data" <<std::endl;
     		throw NoSuchKeyFoundException();
   	}
 
@@ -840,28 +842,40 @@ const void BTreeIndex::scanNext(RecordId& outRid)
 	if (!scanExecuting){ 
 		throw ScanNotInitializedException();
 	}
+	// reach the end of records, no next entry
+	if (nextEntry == -1){
+		throw IndexScanCompletedException();
+	}
+
 	
 	LeafNodeInt *node = reinterpret_cast<LeafNodeInt*>(currentPageData);
 
 	outRid = node->ridArray[nextEntry];
 	int curKey = node->keyArray[nextEntry];
 
-	//check if 1.reach the upper bound 2.end of the key array
-	if (curKey > highValInt || (curKey == highValInt && highOp == LT) || (nextEntry == node->length))
-	{	
-	  throw IndexScanCompletedException();
-	}
 
-	//std::cout << "!!! load :  " << curKey << std::endl;
+	//check if reach the upper bound
+	if (curKey > highValInt || (curKey == highValInt && highOp == LT))
+	{	
+	    throw IndexScanCompletedException();
+	}
 
 	//move to the next entry for the next time scan
 	nextEntry++;
-	//handle the case next entry is the next node
- 	if (nextEntry >= INTARRAYLEAFSIZE || (nextEntry == node->length)){
-    	bufMgr->unPinPage(file, currentPageNum, false);
-  		currentPageNum = node->rightSibPageNo;
-  		bufMgr->readPage(file, currentPageNum, currentPageData);
-  		nextEntry = 0;
+
+	//handle the case that the next entry is the next node
+ 	if (nextEntry >= INTARRAYLEAFSIZE || (nextEntry >= node->length)){
+    	    
+	    if(node->rightSibPageNo == 0){
+	       //no next Entry
+	       nextEntry = -1;
+	   }
+	    else{
+	      bufMgr->unPinPage(file, currentPageNum, false);
+              currentPageNum = node->rightSibPageNo;
+              bufMgr->readPage(file, currentPageNum, currentPageData);
+  	      nextEntry = 0;
+	    }
 	}
 
 }
