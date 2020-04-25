@@ -67,11 +67,13 @@ BufMgr * bufMgr = new BufMgr(100);
 void createRelationForward();
 void createRelationBackward();
 void createRelationRandom();
+void largeIntTests();
 void intTests();
 void errorCases();
 void scanCases();
 int intScan(BTreeIndex *index, int lowVal, Operator lowOp, int highVal, Operator highOp);
 void indexTests();
+void largeIndexTests();
 void test_tree();
 void test1();
 void test2();
@@ -80,11 +82,6 @@ void test4();
 void test5();
 void test6();
 void test7();
-void test8();
-void test9();
-void test10();
-void test11();
-void test12();
 void errorTests();
 void deleteRelation();
 
@@ -203,7 +200,7 @@ void test4()
 	std::cout << "Test 4 relationSize 50000: createRelationForward" << std::endl;
 	relationSize = 50000;
 	createRelationForward();
-	indexTests();
+	largeIndexTests();
 	deleteRelation();
 	std::cout << "Test 4 relationSize 50000: createRelationForward Passed" << std::endl;
 }
@@ -216,7 +213,7 @@ void test5()
 	std::cout << "Test 5 relationSize 50000: createRelationBackward" << std::endl;
 	relationSize = 50000;
 	createRelationBackward();
-	indexTests();
+	largeIndexTests();
 	deleteRelation();
 	std::cout << "Test 5 relationSize 50000: createRelationBackward Passed" << std::endl;
 }
@@ -229,7 +226,7 @@ void test6()
 	std::cout << "Test 6 relationSize 50000: createRelationRandom" << std::endl;
 	relationSize = 50000;
 	createRelationRandom();
-	indexTests();
+	largeIndexTests();
 	deleteRelation();
 	std::cout << "Test 6 relationSize 50000: createRelationRandom Passed" << std::endl;
 }
@@ -692,6 +689,26 @@ void indexTests()
 }
 
 // -----------------------------------------------------------------------------
+// LargeIndexTests
+// -----------------------------------------------------------------------------
+
+void largeIndexTests()
+{
+  if(testNum == 1)
+  {
+    largeIntTests();
+		try
+		{
+			File::remove(intIndexName);
+		}
+  	catch(FileNotFoundException e)
+  	{
+  	}
+  }
+}
+
+
+// -----------------------------------------------------------------------------
 // intTests
 // -----------------------------------------------------------------------------
 
@@ -703,23 +720,37 @@ void intTests()
 
 	// run some tests
 	
-	checkPassFail(intScan(&index,25,GT,40,LT), 14)
-	
+	checkPassFail(intScan(&index,25,GT,40,LT), 14)	
 	checkPassFail(intScan(&index,20,GTE,35,LTE), 16)
 	checkPassFail(intScan(&index,-3,GT,3,LT), 3)
 	checkPassFail(intScan(&index,996,GT,1001,LT), 4)
 	checkPassFail(intScan(&index,0,GT,1,LT), 0)
 	checkPassFail(intScan(&index,300,GT,400,LT), 99)
 	checkPassFail(intScan(&index,3000,GTE,4000,LT), 1000)
-
-	checkPassFail(intScan(&index,-300,GT,-200,LT), 0)
-	checkPassFail(intScan(&index,-300,GT,300,LT), 300)
-	checkPassFail(intScan(&index,-10000,GT,1000,LT), 1000);
-	checkPassFail(intScan(&index,0,GT,10,LTE), 10);
-	checkPassFail(intScan(&index,0,GTE,3000,LTE), 3001);
-	checkPassFail(intScan(&index,0,GTE,relationSize,LTE), relationSize);
 	
 }
+
+void largeIntTests()
+{
+
+  std::cout << "Create a B+ Tree index on the integer field" << std::endl;
+  BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER);
+
+	checkPassFail(intScan(&index,-300,GT,-200,LT), 0)
+        checkPassFail(intScan(&index,-1,GT,0,LT), 0)
+        checkPassFail(intScan(&index,-1,GT,0,LTE), 1)
+        checkPassFail(intScan(&index,0,GTE,1,LT), 1)
+        checkPassFail(intScan(&index,49700,GT,50100,LT), 299)
+	checkPassFail(intScan(&index,-10000,GT,1000,LT), 1000)
+	checkPassFail(intScan(&index,30000,GT,30087,LTE), 87)
+	checkPassFail(intScan(&index,0,GTE,3000,LTE), 3001)
+	checkPassFail(intScan(&index,0,GTE,relationSize,LTE), relationSize) 
+  	checkPassFail(intScan(&index,relationSize-2,GTE,relationSize-1,LTE), 2)
+  	checkPassFail(intScan(&index,relationSize-1,GTE,relationSize,LTE), 1)
+	checkPassFail(intScan(&index,relationSize,GTE,relationSize+1,LTE), 0)
+	
+}
+
 
 int intScan(BTreeIndex * index, int lowVal, Operator lowOp, int highVal, Operator highOp)
 {
@@ -740,7 +771,8 @@ int intScan(BTreeIndex * index, int lowVal, Operator lowOp, int highVal, Operato
 	}
 	catch(NoSuchKeyFoundException e)
 	{
-    std::cout << "No Key Found satisfying the scan criteria." << std::endl;
+    		std::cout << "No Key Found satisfying the scan criteria." << std::endl;
+                index->endScan();
 		return 0;
 	}
 
