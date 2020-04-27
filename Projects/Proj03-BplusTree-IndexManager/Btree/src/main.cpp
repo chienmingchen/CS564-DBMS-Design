@@ -235,7 +235,6 @@ void test_tree()
 {
 	std::cout << "---------------------" << std::endl;
 	std::cout << "Tree Structue Test" << std::endl;
-
 	int oriRelationSize = relationSize;
 	relationSize = 20;
 
@@ -387,6 +386,8 @@ void test_tree()
 	} catch(FileNotFoundException e) {}
 
 	relationSize = oriRelationSize;
+
+	std::cout << "Test Passed : " << __LINE__ << std::endl;
 }
 
 
@@ -414,7 +415,7 @@ void test7()
         Page new_page = file1->allocatePage(new_page_number);
 
         // Insert a bunch of tuples into the relation.
-	for(int i = 0; i <20; i++ ) 
+	for(int i = 0; i <683; i++ ) 
 	{
             sprintf(record1.s, "%05d string record", i);
             record1.i = i;
@@ -461,6 +462,8 @@ void scanCases()
 	int int5 = 5;
 	int int6 = 6;
 	int int9 = 9;
+	int int340 = 340;
+	int int341 = 341;
 	RecordId rid1, rid2;
 	
 	std::cout << "Case 1: startScan twice, then scanNext" << std::endl;
@@ -501,7 +504,21 @@ void scanCases()
 			std::cout << std::endl;		
 			exit(1);
 	}
+	index.endScan();
+	std::cout << "Case 3: startScan with a highVal which is in the next node" << std::endl;
+	try
+	{
+	   index.startScan(&int340, GT, &int341, LT);
+	   std::cout << "\nTest FAILS at line no:" << __LINE__;
+	   index.endScan();
+	   exit(1);
 
+	}
+	catch(NoSuchKeyFoundException e)
+	{
+	   std::cout << "Test Passed" << std::endl;
+	   std::cout << std::endl;
+	}
         
 }
 
@@ -735,8 +752,8 @@ void largeIntTests()
 
   std::cout << "Create a B+ Tree index on the integer field" << std::endl;
   BTreeIndex index(relationName, intIndexName, bufMgr, offsetof(tuple,i), INTEGER);
-
-	checkPassFail(intScan(&index,-300,GT,-200,LT), 0)
+	
+  	checkPassFail(intScan(&index,-300,GT,-200,LT), 0)
         checkPassFail(intScan(&index,-1,GT,0,LT), 0)
         checkPassFail(intScan(&index,-1,GT,0,LTE), 1)
         checkPassFail(intScan(&index,0,GTE,1,LT), 1)
@@ -748,7 +765,7 @@ void largeIntTests()
   	checkPassFail(intScan(&index,relationSize-2,GTE,relationSize-1,LTE), 2)
   	checkPassFail(intScan(&index,relationSize-1,GTE,relationSize,LTE), 1)
 	checkPassFail(intScan(&index,relationSize,GTE,relationSize+1,LTE), 0)
-	
+
 }
 
 
@@ -772,7 +789,6 @@ int intScan(BTreeIndex * index, int lowVal, Operator lowOp, int highVal, Operato
 	catch(NoSuchKeyFoundException e)
 	{
     		std::cout << "No Key Found satisfying the scan criteria." << std::endl;
-                index->endScan();
 		return 0;
 	}
 

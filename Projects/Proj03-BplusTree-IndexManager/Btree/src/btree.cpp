@@ -788,12 +788,14 @@ const void BTreeIndex::startScan(const void* lowValParm,
 	//but the exception is the end of key array
 	if(node->keyArray[entryIdx] < lowValInt){
 		//cannot find the entry in the expected node
+		endScan();
 		throw NoSuchKeyFoundException();
   	}
         //handle the case that the found entry is bigger than the highVal
-	if(node->keyArray[entryIdx] > highValInt || (node->keyArray[entryIdx] == highValInt && highOp == LT))
+	if(node->keyArray[entryIdx] > highValInt || (node->keyArray[entryIdx] == highValInt && highOp == LT)){
+		endScan();
 		throw NoSuchKeyFoundException();
-	
+	}
   	//the case that the entry is the last record and lowOp is GT
   	//the entry will be in the next node
 	if(entryIdx == (node->length-1) && lowOp == GT){
@@ -803,14 +805,14 @@ const void BTreeIndex::startScan(const void* lowValParm,
     		nextEntry = 0;
 
 		//ensure that the entry won't violate the high bound
-		LeafNodeInt *node = (LeafNodeInt *)currentPageData;
-		int curKey = node->keyArray[nextEntry];
-		if(curKey > highValInt || (curKey == highValInt && highOp == LT)) {
+		//LeafNodeInt *node = (LeafNodeInt *)currentPageData;
+		//int curKey = node->keyArray[nextEntry];
+		//if(curKey > highValInt || (curKey == highValInt && highOp == LT)) {
     			
-	    		std::cout << "!!! exceed the higher bound" <<std::endl;
-			endScan();
-    			throw NoSuchKeyFoundException();
-   	 	}
+	    	//	std::cout << "!!! exceed the higher bound" <<std::endl;
+		//	endScan();
+    		//	throw NoSuchKeyFoundException();
+   	 	//}
   	}
   	else{
 		if(lowOp == GT && lowValInt == node->keyArray[entryIdx])
@@ -818,8 +820,15 @@ const void BTreeIndex::startScan(const void* lowValParm,
 		else
 		nextEntry = entryIdx;
   	}
-
-	                                                                                
+	
+	node = (LeafNodeInt *)currentPageData;
+	int curKey = node->keyArray[nextEntry];
+	if(curKey > highValInt || (curKey == highValInt && highOp == LT)) {
+             std::cout << "!!! exceed the higher bound" <<std::endl;
+             endScan();
+             throw NoSuchKeyFoundException();
+        }
+                                                                              
 	//Now the entry has been located
   	RecordId outRid = node->ridArray[nextEntry];
 
