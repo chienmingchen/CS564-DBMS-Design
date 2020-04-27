@@ -804,15 +804,6 @@ const void BTreeIndex::startScan(const void* lowValParm,
     		bufMgr->readPage(file, currentPageNum, currentPageData);
     		nextEntry = 0;
 
-		//ensure that the entry won't violate the high bound
-		//LeafNodeInt *node = (LeafNodeInt *)currentPageData;
-		//int curKey = node->keyArray[nextEntry];
-		//if(curKey > highValInt || (curKey == highValInt && highOp == LT)) {
-    			
-	    	//	std::cout << "!!! exceed the higher bound" <<std::endl;
-		//	endScan();
-    		//	throw NoSuchKeyFoundException();
-   	 	//}
   	}
   	else{
 		if(lowOp == GT && lowValInt == node->keyArray[entryIdx])
