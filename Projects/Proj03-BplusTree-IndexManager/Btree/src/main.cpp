@@ -387,7 +387,7 @@ void test_tree()
 
 	relationSize = oriRelationSize;
 
-	std::cout << "Test Passed : " << __LINE__ << std::endl;
+	std::cout << "Test Passed at line no : " << __LINE__ << std::endl;
 }
 
 
